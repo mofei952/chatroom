@@ -1,0 +1,68 @@
+*{ margin:0; padding:0; box-sizing: border-box;}
+
+body{ font-size:14px; font-family:微软雅黑;font-style:normal; background:/*url('/static/image/bg_contact.jpg')*/black no-repeat; background-size:100% 100%;}
+
+
+a{ text-decoration:none}
+
+a,a:hover{  transition:background 0.5s linear;-webkit-transition:background 0.5s linear;-moz-transition:background 0.5s linear;-o-transition:background 0.5s linear;}
+
+em, i{font-style: normal;}
+
+ul, ol, li{list-style: none;}
+
+img{ border:none;vertical-align:middle;}
+
+input,select,textarea{outline:none;border:none;background:none;}
+
+textarea{resize:none;}
+
+p{line-height:22px;}
+
+.fl{float: left;}
+
+.fr{float: right;}
+
+.clear{ clear:both; height:0px; width:100%; overflow:hidden;}
+
+.position{position:relative;}
+
+
+
+/*公共样式
+.layout{ width:1100px; display:table; margin:0 auto;}*/
+
+/*样式*/
+html,body{height:100%}
+body{padding-top: 20px}
+.container{width:1000px;height:600px;margin:0 auto; background-color: #f9f9f9 }
+.userpnl{width: 30%; float:left;    border-right: 1px #f1f1f1 solid;}
+.chatpnl{width: 70%;float:right;}
+
+.user{margin: 20px;height:48px}
+.user img{width: 48px; height: auto ;}
+.user span{font-size: 16px; margin-left: 10px}
+.nav{width:50%; text-align: center;padding: 16px 0px;background-color:#f1f1f1;float: left;cursor:pointer}
+.nav:hover { background-color: #ccc;}
+.chatlist {height:461px; overflow: auto;}
+.chatlist li{ display:inline-block; width: 100%; cursor:pointer}
+.qun{padding:5px 20px;}
+.qun:hover{ background-color: #ccc;}
+.qun img{width: 48px; height: auto ;}
+.qun span{font-size: 16px; margin-left: 10px}
+.time{float: right;    margin-top: 10px;font-size: 12px;color: #ddd;}
+
+.chathead{ text-align: center; border-bottom: 1px #f1f1f1 solid; padding: 12px 0;}
+.chatleft{float: left;}
+.chat{padding: 10px 0;min-height:48px;width: 400px;}
+.chat img{width: 32px; height: auto ;margin:0 10px}
+.chat p{border: 1px #ccc solid;border-radius: 5px;padding: 12px;max-width: 80%;width:320px;}
+/*.chat p.fr{margin-left: 0px;margin-right: 10px;}*/
+.chatright{float: right;}
+.chat-content{height: 400px; overflow: auto;border-bottom: 1px #f1f1f1 solid}
+#editor{height:153px}
+#edui1{border-radius: 0;border: 0;}
+#edui1_toolbarbox{box-shadow: 0 0 0 rgba(204, 204, 204, 0.6);border-top-left-radius: 0;border-top-right-radius: 0;}
+#edui1_toolbarboxouter{-webkit-border-radius: 0 0 0 0;-moz-border-radius: 0 0 0 0;border-radius: 0 0 0 0;box-shadow: 0 0 0;background-image: none;background-color: #f9f9f9;    border-bottom: 1px solid #f1f1f1;}
+.edui-editor-toolbarboxinner{-webkit-border-radius: 0 0 0 0;-moz-border-radius: 0 0 0 0;border-radius: 0 0 0 0;}
+#edui1_wordcount{border-top: 1px solid #f1f1f1;}
