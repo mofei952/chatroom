@@ -56,7 +56,7 @@ body{padding-top: 20px}
 .chatleft{float: left;}
 .chat{padding: 10px 0;min-height:48px;width: 400px;}
 .chat img{width: 32px; height: auto ;margin:0 10px}
-.chat p{border: 1px #ccc solid;border-radius: 5px;padding: 12px;max-width: 80%;width:320px;}
+.chat p{border: 1px #ccc solid;border-radius: 5px;padding: 12px;max-width: 80%;word-break: break-all;word-wrap:break-word;}
 /*.chat p.fr{margin-left: 0px;margin-right: 10px;}*/
 .chatright{float: right;}
 .chat-content{height: 400px; overflow: auto;border-bottom: 1px #f1f1f1 solid}
