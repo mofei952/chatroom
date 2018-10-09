@@ -7,6 +7,8 @@
 # @Software: PyCharm
 from os import path
 
+SECRET_KEY = 'xxx'
+
 basepath = path.abspath(path.dirname(__file__))
 
 DEBUG = True

@@ -17,6 +17,18 @@ class User(db.Model):
     nickname = db.Column(db.String(50), nullable=False)
     profile_picture = db.Column(db.String(50))
 
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
 
 class ChatRoom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -28,8 +40,11 @@ class Chat(db.Model):
     type = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    chat_room_id = db.Column(db.Integer, db.ForeignKey('chat_room.id'))
+    sender = db.relationship('User', backref='send_chats', foreign_keys=[sender_id])
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    receiver = db.relationship('User', backref='receive_chats', foreign_keys=[receiver_id])
+    chat_room_id = db.Column(db.Integer, db.ForeignKey('chat_room.id'))
+    chat_room = db.relationship('ChatRoom', backref='chats')
 
 
 class in_chat(db.Model):

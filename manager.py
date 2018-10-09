@@ -5,14 +5,15 @@
 # @Time    : 2018/10/1 23:01
 # @File    : manager.py
 # @Software: PyCharm
+
 from flask_script import Server, Manager
 
-from app import create_app
+from app import create_app, socketio
 
 app = create_app()
 manager = Manager(app)
-# server = Server(host="0.0.0.0", port=8001)
-manager.add_command('runserver', Server())
+server = Server(host="0.0.0.0", port=8001)
+manager.add_command('runserver', server)
 
 
 @manager.command

@@ -5,149 +5,97 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="description" content="聊天室">
     <meta name="keywords" content="聊天室"/>
+    <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet" type="text/css"/>
     <link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet" type="text/css"/>
     <script src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='ueditor/ueditor.config.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='ueditor/ueditor.all.min.js') }}"> </script>
+    <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+    <script type="text/javascript" charset="utf-8"
+            src="{{ url_for('static', filename='ueditor/ueditor.config.js') }}"></script>
+    <script type="text/javascript" charset="utf-8"
+            src="{{ url_for('static', filename='ueditor/ueditor.all.min.js') }}"></script>
     <!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
     <!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='ueditor/lang/zh-cn/zh-cn.js') }}"></script>
+    <script type="text/javascript" charset="utf-8"
+            src="{{ url_for('static', filename='ueditor/lang/zh-cn/zh-cn.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.dev.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </head>
 <body lang="zh-cn">
 <div class="container">
     <div class="userpnl">
-        <div class="user">
+        <div class="user" data="{{ current_user.id }}">
             <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="usericon">
-            <span>username</span>
+            <span>{{ current_user.name }}</span>
         </div>
-        <div id='chat_room_btn' class="nav">聊天室</div>
+        <div id='chat_room_btn' class="nav">
+            <span>聊天室</span>
+            <a id="add_chat_room_btn">+</a>
+        </div>
         <div id='friend_btn' class="nav">联系人</div>
         <div class="clear"></div>
         <ul class="chatlist">
             {% for chat_room in chat_room_list %}
-            <li data="{{ chat_room.id }}">
-                <div class="qun">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
-                    <span>{{ chat_room.name }}</span>
-                    <span class="time">12:08</span>
-                </div>
-            </li>
+                <li data="{{ chat_room.id }}">
+                    <div class="qun">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                        <span>{{ chat_room.name }}</span>
+                        <span class="time">12:08</span>
+                    </div>
+                </li>
             {% endfor %}
         </ul>
 
     </div>
     <div class="chatpnl">
-        <p class="chathead">棋子聊天室</p>
+        <p class="chathead"></p>
         <div class="chat-content">
-            <div class="chatleft">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fl">
-                    <p class="fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div class="chatright">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fr">
-                    <p class="fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div class="chatleft">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fl">
-                    <p class="fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-
-            </div>
-            <div class="chatright">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fr">
-                    <p class="fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div class="chatleft">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fl">
-                    <p class="fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-
-            </div>
-            <div class="chatright">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fr">
-                    <p class="fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div class="chatleft">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fl">
-                    <p class="fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-
-            </div>
-            <div class="chatright">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fr">
-                    <p class="fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div class="chatleft">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fl">
-                    <p class="fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-
-            </div>
-            <div class="chatright">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fr">
-                    <p class="fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div class="chatleft">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fl">
-                    <p class="fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-
-            </div>
-            <div class="chatright">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fr">
-                    <p class="fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-            <div class="chatleft">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fl">
-                    <p class="fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-
-            </div>
-            <div class="chatright">
-                <div class="chat">
-                    <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon fr">
-                    <p class="fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</p>
-                    <div class="clear"></div>
-                </div>
-            </div>
-
+            {#            <div class="chatleft">#}
+            {#                <div class="chat">#}
+            {#                    <div class="chatinfo fl">#}
+            {#                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon"><br/>#}
+            {#                        <div>一二三四五六七</div>#}
+            {#                    </div>#}
+            {#                    <div class="chatcontent fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</div>#}
+            {#                    <div class="clear"></div>#}
+            {#                </div>#}
+            {#            </div>#}
+            {#            <div class="chatright">#}
+            {#                <div class="chat">#}
+            {#                    <div class="chatinfo fr">#}
+            {#                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="chaticon"><br/>#}
+            {#                        <div>一二三四五六七</div>#}
+            {#                    </div>#}
+            {#                    <div class="chatcontent fr">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</div>#}
+            {#                    <div class="clear"></div>#}
+            {#                </div>#}
+            {#            </div>#}
+            {#            <div class="clear"></div>#}
+            {#            <div class="cahtnotice">#}
+            {#                <p>---------棋子已经进入聊天室--------</p>#}
+            {#            </div>#}
         </div>
         <div class="chat-input">
-            <script type="text/plain" id="editor" ></script>
+            <script type="text/plain" id="editor"></script>
+        </div>
+    </div>
+    <div class="modal fade bs-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog modal-sm" role="document" aria-hidden="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">创建聊天室</h4>
+                </div>
+                <div class="modal-body">
+                    {{ form.csrf_token }}
+                    <span>名称：</span>
+                    <input id="chat_room_name" name="chat_room_name"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button id="create_btn" type="button" class="btn btn-primary">创建</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
