@@ -1,2 +1,8 @@
 .idea/
+.vscode/
+.venv/
+.VSCodeCounter/
+.mypy_cache/
+.env
 __pycache__/
+app/media/

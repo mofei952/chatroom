@@ -44,8 +44,8 @@ body{padding-top: 20px}
 .user span{font-size: 16px; margin-left: 10px}
 .nav{width:50%; text-align: center;padding: 16px 0px;background-color:#f1f1f1;float: left;cursor:pointer;position:relative}
 .nav:hover { background-color: #ccc;}
-.nav:hover #add_chat_room_btn{display:inline}
-#add_chat_room_btn{display:none;position: absolute;right:10px;}
+.nav:hover .add_btn{display:inline}
+.add_btn{display:none;position: absolute;right:10px;}
 .chatlist {height:430px; overflow: auto;}
 .chatlist li{ display:inline-block; width: 100%; cursor:pointer}
 .qun{padding:5px 20px;}

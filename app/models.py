@@ -7,10 +7,32 @@
 # @Software: PyCharm
 
 
+from datetime import datetime
+
+from sqlalchemy import DateTime, Integer
 from app import db
 
 
-class User(db.Model):
+class BaseModel(db.Model):
+    __abstract__ = True
+
+    id = db.Column(Integer, primary_key=True)
+    created_at = db.Column(DateTime, default=datetime.now)
+    updated_at = db.Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(DateTime)
+
+    def delete(self, soft=True):
+        if soft:
+            self.is_deleted = True
+            self.deleted_at = datetime.now()
+            db.session.commit()
+        else:
+            db.session.delete(self)
+            db.session.commit()
+
+
+class User(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(50), nullable=False)
@@ -30,25 +52,32 @@ class User(db.Model):
         return self.id
 
 
-class ChatRoom(db.Model):
+class ChatRoom(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
 
-class Chat(db.Model):
+class Chat(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    sender = db.relationship('User', backref='send_chats', foreign_keys=[sender_id])
-    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    receiver = db.relationship('User', backref='receive_chats', foreign_keys=[receiver_id])
     chat_room_id = db.Column(db.Integer, db.ForeignKey('chat_room.id'))
+
+    sender = db.relationship('User', foreign_keys=[sender_id])
     chat_room = db.relationship('ChatRoom', backref='chats')
 
 
-class in_chat(db.Model):
+class Friendships(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
-    enter_time = db.Column(db.DateTime, primary_key=True)
-    leave_time = db.Column(db.DateTime, primary_key=True)
-    is_chat = db.Column(db.Boolean, primary_key=True)
+    user_id = db.Column(db.Integer)
+    friend_id = db.Column(db.Integer)
+
+
+class FriendChat(BaseModel):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    sender = db.relationship('User', foreign_keys=[sender_id])
+    receiver = db.relationship('User', foreign_keys=[receiver_id])

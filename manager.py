@@ -6,40 +6,47 @@
 # @File    : manager.py
 # @Software: PyCharm
 
-from flask_script import Server, Manager
-
 from app import create_app, socketio
 
 app = create_app()
-manager = Manager(app)
-server = Server(host="0.0.0.0", port=8001)
-manager.add_command('runserver', server)
 
 
-@manager.command
+@app.cli.command('dev')
 def dev():
     from livereload import Server
+
     live_server = Server(app.wsgi_app)
     live_server.watch('**/*.*')
     live_server.serve(open_url=True)
 
 
-@manager.command
+@app.cli.command('test')
 def test():
     pass
 
 
-@manager.command
+@app.cli.command('deploy')
 def deploy():
     pass
 
 
-@manager.command
+@app.cli.command('init_db')
 def init_db():
     from app import db
     from app import models
+
+    db.create_all()
+
+
+@app.cli.command('recreate_db')
+def recreate_db():
+    """重建数据库，会删除所有数据"""
+    from app import db
+    from app import models
+
+    db.drop_all()
     db.create_all()
 
 
 if __name__ == '__main__':
-    manager.run()
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

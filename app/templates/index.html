@@ -17,7 +17,7 @@
     <!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
     <script type="text/javascript" charset="utf-8"
             src="{{ url_for('static', filename='ueditor/lang/zh-cn/zh-cn.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/socket.io.dev.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </head>
 <body lang="zh-cn">
@@ -29,22 +29,35 @@
         </div>
         <div id='chat_room_btn' class="nav">
             <span>聊天室</span>
-            <a id="add_chat_room_btn">+</a>
+            <a id="add_chat_room_btn" class="add_btn">+</a>
         </div>
-        <div id='friend_btn' class="nav">联系人</div>
+        <div id='friend_btn' class="nav">
+            <span>联系人</span>
+            <a id="add_friend_btn" class="add_btn">+</a>
+        </div>
         <div class="clear"></div>
-        <ul class="chatlist">
-            {% for chat_room in chat_room_list %}
-                <li data="{{ chat_room.id }}">
+        <ul id="room_list" class="chatlist" style="display: {{ 'block' if tab == 'chatroom' else 'none' }};">
+            {% for room in chatrooms %}
+                <li data="{{ room.id }}">
                     <div class="qun">
                         <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
-                        <span>{{ chat_room.name }}</span>
+                        <span>{{ room.name }}</span>
                         <span class="time">12:08</span>
                     </div>
                 </li>
             {% endfor %}
         </ul>
-
+        <ul id="friend_list" class="chatlist" style="display: {{ 'block' if tab == 'friend' else 'none' }};">
+            {% for friend in friends %}
+                <li data="{{ friend.id }}">
+                    <div class="qun">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                        <span>{{ friend.name }}</span>
+                        <span class="time">12:08</span>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
     <div class="chatpnl">
         <p class="chathead"></p>
@@ -78,22 +91,40 @@
             <script type="text/plain" id="editor"></script>
         </div>
     </div>
-    <div class="modal fade bs-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal fade bs-example-modal-sm" id="add_chat_room_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog modal-sm" role="document" aria-hidden="true">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                             aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">创建聊天室</h4>
+                    <h4 class="modal-title">创建聊天室</h4>
                 </div>
                 <div class="modal-body">
-                    {{ form.csrf_token }}
                     <span>名称：</span>
                     <input id="chat_room_name" name="chat_room_name"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button id="create_btn" type="button" class="btn btn-primary">创建</button>
+                    <button id="add_chat_room_confirm_btn" type="button" class="btn btn-primary">创建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade bs-example-modal-sm" id="add_friend_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog modal-sm" role="document" aria-hidden="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">添加联系人</h4>
+                </div>
+                <div class="modal-body">
+                    <span>名称：</span>
+                    <input id="friend_name" name="friend_name"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button id="add_friend_confirm_btn" type="button" class="btn btn-primary">添加</button>
                 </div>
             </div>
         </div>

@@ -3,9 +3,8 @@
 <head>
     <meta charset="utf-8">
     <title>登录</title>
-    <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
 </head>
 <body>
 <div class="container">
@@ -29,7 +28,7 @@
                 <input type="submit" name="login" value="login" id="login">
             </div>
         </form>
-        <a class="remind" href="{{ url_for('register') }}"><p>未有账号，前往注册</p>
+        <a class="remind" href="{{ url_for('web.register') }}"><p>未有账号，前往注册</p>
         </a>
     </div>
 </div>
