@@ -27,9 +27,9 @@
             <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="usericon">
             <span>{{ current_user.name }}</span>
         </div>
-        <div id='chat_room_btn' class="nav">
+        <div id='chatroom_btn' class="nav">
             <span>聊天室</span>
-            <a id="add_chat_room_btn" class="add_btn">+</a>
+            <a id="add_chatroom_btn" class="add_btn">+</a>
         </div>
         <div id='friend_btn' class="nav">
             <span>联系人</span>
@@ -91,7 +91,7 @@
             <script type="text/plain" id="editor"></script>
         </div>
     </div>
-    <div class="modal fade bs-example-modal-sm" id="add_chat_room_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal fade bs-example-modal-sm" id="add_chatroom_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog modal-sm" role="document" aria-hidden="true">
             <div class="modal-content">
                 <div class="modal-header">
@@ -101,11 +101,11 @@
                 </div>
                 <div class="modal-body">
                     <span>名称：</span>
-                    <input id="chat_room_name" name="chat_room_name"/>
+                    <input id="chatroom_name" name="chatroom_name"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                    <button id="add_chat_room_confirm_btn" type="button" class="btn btn-primary">创建</button>
+                    <button id="add_chatroom_confirm_btn" type="button" class="btn btn-primary">创建</button>
                 </div>
             </div>
         </div>

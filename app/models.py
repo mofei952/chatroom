@@ -52,28 +52,32 @@ class User(BaseModel):
         return self.id
 
 
-class ChatRoom(BaseModel):
+class Chatroom(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
 
-class Chat(BaseModel):
+class ChatroomMessage(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    chat_room_id = db.Column(db.Integer, db.ForeignKey('chat_room.id'))
+    chatroom_id = db.Column(db.Integer, db.ForeignKey('chatroom.id'))
 
     sender = db.relationship('User', foreign_keys=[sender_id])
-    chat_room = db.relationship('ChatRoom', backref='chats')
+    chatroom = db.relationship('Chatroom', backref='chats')
+
+    __table_args__ = (
+        db.Index('idx_chatroom_id_create_at', 'chatroom_id', 'created_at'),
+    )
 
 
 class Friendships(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    friend_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
-class FriendChat(BaseModel):
+class FriendMessage(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -81,3 +85,8 @@ class FriendChat(BaseModel):
 
     sender = db.relationship('User', foreign_keys=[sender_id])
     receiver = db.relationship('User', foreign_keys=[receiver_id])
+
+    __table_args__ = (
+        db.Index('idx_sender_receiver_create_at', 'sender_id', 'receiver_id', 'created_at'),
+        db.Index('idx_receiver_sender_create_at', 'sender_id', 'created_at'),
+    )

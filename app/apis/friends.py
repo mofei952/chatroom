@@ -5,7 +5,7 @@ from flask_restx import Namespace, Resource, abort, fields
 from sqlalchemy import select
 
 from app import db, socketio
-from app.models import Chat, Friendships, FriendChat, User
+from app.models import Friendships, FriendMessage, User
 from app.apis.socketio import user_id_and_sid_list
 from app.utils import AlchemyEncoder
 
@@ -19,7 +19,7 @@ friend_model = ns.model(
     },
 )
 
-chat_model = ns.model(
+message_model = ns.model(
     'chat model',
     {
         'id': fields.Integer(),
@@ -28,21 +28,20 @@ chat_model = ns.model(
         'sender_id': fields.Integer(),
         'sender_name': fields.String(),
         'receiver_id': fields.Integer(),
-        'chat_room_id': fields.Integer(),
     },
 )
 
 
-def send_message(chat):
+def send_message(message):
     """发送个人消息"""
     sids = [
-        user_id_and_sid_list[chat.sender_id],
-        user_id_and_sid_list[chat.receiver_id],
+        user_id_and_sid_list[message.sender_id],
+        user_id_and_sid_list[message.receiver_id],
     ]
-    chat.sender_name = chat.sender.name
+    message.sender_name = message.sender.name
     for sid in sids:
         socketio.send(
-            json.dumps(chat, cls=AlchemyEncoder), room=sid, namespace='/websocket'
+            json.dumps(message, cls=AlchemyEncoder), room=sid, namespace='/websocket'
         )
 
 
@@ -105,15 +104,15 @@ class FriendList(Resource):
 
 @login_required
 @ns.route('/<int:user_id>/chats')
-class FriendChatList(Resource):
-    @ns.marshal_with(chat_model)
+class FriendMessageList(Resource):
+    @ns.marshal_with(message_model)
     def get(self, user_id):
         """获取好友聊天列表"""
         chat_list = (
             db.session.execute(
-                select(FriendChat).where(
-                    (FriendChat.sender_id == user_id)
-                    | (FriendChat.receiver_id == user_id)
+                select(FriendMessage).where(
+                    (FriendMessage.sender_id == user_id)
+                    | (FriendMessage.receiver_id == user_id)
                 )
             )
             .scalars()
@@ -126,7 +125,7 @@ class FriendChatList(Resource):
     def post(self, user_id):
         """好友发送内容"""
         content = request.form.get('content')
-        chat = FriendChat(
+        chat = FriendMessage(
             content=content,
             sender_id=current_user.id,
             receiver_id=user_id,

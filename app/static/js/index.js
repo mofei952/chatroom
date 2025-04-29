@@ -23,8 +23,8 @@ $(function () {
                 console.log('发送')
                 text = ue.getContent()
                 if (ROOM) {
-                    chat_room_id = $('.chatpnl').attr('data')
-                    $.post('/api/v1/chatrooms/' + chat_room_id + '/chats', { content: text }, function (res) {
+                    chatroom_id = $('.chatpnl').attr('data')
+                    $.post('/api/v1/chatrooms/' + chatroom_id + '/chats', { content: text }, function (res) {
                         $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
                         ue.setContent('')
                     }, 'json')
@@ -50,7 +50,7 @@ $(function () {
     });
 
     // 点击聊天室按钮显示聊天室列表
-    $('#chat_room_btn').click(function () {
+    $('#chatroom_btn').click(function () {
         $('#friend_list').hide()
         $('#room_list').show()
         $.getJSON('/api/v1/chatrooms', function (rooms) {
@@ -70,12 +70,12 @@ $(function () {
         })
     })
     // 点击+按钮显示创建聊天室窗口
-    $('#add_chat_room_btn').click(function () {
-        $('#add_chat_room_modal').modal()
+    $('#add_chatroom_btn').click(function () {
+        $('#add_chatroom_modal').modal()
     })
     // 创建聊天室窗口的创建按钮事件
-    $('#add_chat_room_confirm_btn').click(function () {
-        name = $('#chat_room_name').val().trim()
+    $('#add_chatroom_confirm_btn').click(function () {
+        name = $('#chatroom_name').val().trim()
         $.post({
             url: '/api/v1/chatrooms',
             contentType: 'application/json',
@@ -87,16 +87,16 @@ $(function () {
     })
     // 点击聊天室列表的li进入对应的聊天室
     $('#room_list').on('click', 'li', function () {
-        chat_room_name = $(this).find('span').eq(0).text()
-        chat_room_id = $(this).closest('li').attr('data')
-        $.getJSON('/api/v1/chatrooms/' + chat_room_id + '/chats', function (chats) {
+        chatroom_name = $(this).find('span').eq(0).text()
+        chatroom_id = $(this).closest('li').attr('data')
+        $.getJSON('/api/v1/chatrooms/' + chatroom_id + '/chats', function (chats) {
             // 如果已经在聊天室，先发出离开聊天室信号
             if (ROOM) {
-                socket.emit('leave_chat_room', { name: user_name, room: ROOM });
+                socket.emit('leave_chatroom', { name: user_name, room: ROOM });
             }
             // 在页面上存储该聊天室信息
-            $('.chatpnl').attr('data', chat_room_id)
-            $('.chathead').text(chat_room_name)
+            $('.chatpnl').attr('data', chatroom_id)
+            $('.chathead').text(chatroom_name)
             // 获取当前用户信息
             current_user_id = $('.user').attr('data')
             user_name = $('.user span').text()
@@ -123,9 +123,9 @@ $(function () {
                 $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             }, 100);
             // 发出进入聊天室信号
-            socket.emit('join_chat_room', { name: user_name, room: chat_room_id });
+            socket.emit('join_chatroom', { name: user_name, room: chatroom_id });
             // 设置全局变量
-            ROOM = chat_room_id
+            ROOM = chatroom_id
             FRIEND = null
             // 显示editor
             $('#editor').show()
@@ -176,7 +176,7 @@ $(function () {
         $.getJSON('/api/v1/friends/' + friend_id + '/chats', function (chats) {
             // 如果已经在聊天室，先发出离开聊天室信号
             if (ROOM) {
-                socket.emit('leave_chat_room', { name: user_name, room: ROOM });
+                socket.emit('leave_chatroom', { name: user_name, room: ROOM });
             }
             // 在页面上存储该好友信息
             $('.chatpnl').attr('data', friend_id)
@@ -219,7 +219,7 @@ ROOM = null
 FRIEND = null
 var socket = io('http://' + location.hostname + ':' + location.port + '/websocket');
 socket.on('connect', function () { // 发送到服务器的通信内容
-    // socket.emit('join_chat_room', {name:'11',room: '1'});
+    // socket.emit('join_chatroom', {name:'11',room: '1'});
 });
 socket.on('message', function (msg) {
     //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
@@ -227,7 +227,7 @@ socket.on('message', function (msg) {
     console.log('msg', msg)
     chat = JSON.parse(msg)
     console.log(chat)
-    if (ROOM && chat.chat_room_id == ROOM) {
+    if (ROOM && chat.chatroom_id == ROOM) {
         if (chat.sender_name == 'admin') {
             div = '<div class="clear"></div>\n' +
                 '            <div class="cahtnotice">\n' +
