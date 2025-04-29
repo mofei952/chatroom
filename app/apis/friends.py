@@ -111,8 +111,8 @@ class FriendMessageList(Resource):
         chat_list = (
             db.session.execute(
                 select(FriendMessage).where(
-                    (FriendMessage.sender_id == user_id)
-                    | (FriendMessage.receiver_id == user_id)
+                    (FriendMessage.sender_id == current_user.id) & (FriendMessage.receiver_id == user_id)
+                    | (FriendMessage.sender_id == user_id) & (FriendMessage.receiver_id == current_user.id)
                 )
             )
             .scalars()
