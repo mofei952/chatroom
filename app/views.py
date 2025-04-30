@@ -30,7 +30,7 @@ from wtforms.validators import DataRequired, EqualTo, ValidationError
 from app import db, login_manager
 from app.models import Chatroom, Friendships, User
 
-bp = Blueprint('web', __name__, url_prefix='')
+bp = Blueprint('web', __name__)
 
 
 login_manager.login_view = 'web.login'
@@ -60,20 +60,20 @@ class RegisterForm(FlaskForm):
 @login_required
 def index():
     """首页"""
-    chatrooms = db.session.execute(select(Chatroom)).scalars().all()
-    friends = (
-        db.session.execute(
-            select(User).where(
-                User.id.in_(
-                    select(Friendships.friend_id).where(
-                        Friendships.user_id == current_user.id
-                    )
+    chatrooms = db.session.scalars(
+        select(Chatroom).where(Chatroom.is_deleted.is_(False))
+    ).all()
+    friends = db.session.scalars(
+        select(User).where(
+            User.id.in_(
+                select(Friendships.friend_id).where(
+                    Friendships.user_id == current_user.id,
+                    Friendships.is_deleted.is_(False),
                 )
             )
         )
-        .scalars()
-        .all()
-    )
+    ).all()
+
     return render_template(
         'index.html',
         chatrooms=chatrooms,
