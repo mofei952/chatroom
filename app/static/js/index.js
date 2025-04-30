@@ -27,7 +27,7 @@ $(function () {
             if (event.code == 'Enter') {
                 event.preventDefault();
                 // event.stopPropagation()
-                console.log('发送')
+                console.log('send')
                 text = ue.getContent()
                 if (current_chatroom_id) {
                     $.post('/api/v1/chatrooms/' + current_chatroom_id + '/messages', { content: text }, function (res) {
@@ -263,41 +263,42 @@ var socket = io('http://' + location.hostname + ':' + location.port + '/websocke
 socket.on('connect', function () { // 发送到服务器的通信内容
     // socket.emit('join_chatroom', {name:'11',room: '1'});
 });
-socket.on('message', function (msg) {
+socket.on('json', function (message) {
     //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
-    console.log('msg', msg)
-    chat = JSON.parse(msg)
-    console.log(chat)
-    if (current_chatroom_id && chat.chatroom_id == current_chatroom_id) {
-        if (chat.sender_name == 'admin') {
+    console.log('receive: ', message)
+    if (current_chatroom_id && message.chatroom_id == current_chatroom_id) {
+        if (message.sender_name == 'admin') {
             div = '<div class="clear"></div>\n' +
                 '            <div class="cahtnotice">\n' +
-                '                <p>---------' + chat.content + '--------</p>\n' +
+                '                <p>---------' + message.content + '--------</p>\n' +
                 '            </div>'
         } else {
-            div = '<div class="chat' + (chat.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
+            div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
                 '                <div class="chat">\n' +
-                '                    <div class="chatinfo ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
+                '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
                 '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-                '                        <div>' + chat.sender_name + '</div>\n' +
+                '                        <div>' + message.sender_name + '</div>\n' +
                 '                    </div>\n' +
-                '                    <div class="chatcontent ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">' + chat.content + '</div>\n' +
+                '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
                 '                    <div class="clear"></div>\n' +
                 '                </div>\n' +
                 '            </div>'
         }
-    } else if (current_friend_id && (chat.sender_id == current_friend_id || chat.receiver_id == current_friend_id)) {
-        div = '<div class="chat' + (chat.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
+    } else if (current_friend_id && (message.sender_id == current_friend_id || message.receiver_id == current_friend_id)) {
+        div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
             '                <div class="chat">\n' +
-            '                    <div class="chatinfo ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
+            '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
             '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-            '                        <div>' + chat.sender_name + '</div>\n' +
+            '                        <div>' + message.sender_name + '</div>\n' +
             '                    </div>\n' +
-            '                    <div class="chatcontent ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">' + chat.content + '</div>\n' +
+            '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
             '                    <div class="clear"></div>\n' +
             '                </div>\n' +
             '            </div>'
     }
     $('.chat-content').append(div)
-    $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
+    $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
+    setTimeout(function () {
+        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
+    }, 100);
 });

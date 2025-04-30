@@ -71,6 +71,9 @@ class ChatroomMessage(BaseModel):
         db.Index('idx_chatroom_id_create_at', 'chatroom_id', 'created_at'),
     )
 
+    @property
+    def sender_name(self):
+        return self.sender.name
 
 class Friendships(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
@@ -93,3 +96,7 @@ class FriendMessage(BaseModel):
         ),
         db.Index('idx_receiver_sender_create_at', 'sender_id', 'created_at'),
     )
+
+    @property
+    def sender_name(self):
+        return self.sender.name
