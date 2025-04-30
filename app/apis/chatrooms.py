@@ -1,8 +1,10 @@
+from datetime import datetime
 import json
 
 from flask import request
 from flask_login import current_user, login_required
 from flask_restx import Namespace, Resource, abort, fields
+from sqlalchemy import select
 
 from app import db, socketio
 from app.models import ChatroomMessage, Chatroom
@@ -29,6 +31,7 @@ message_model = ns.model(
         'sender_name': fields.String(),
         'receiver_id': fields.Integer(),
         'chatroom_id': fields.Integer(),
+        'created_at': fields.String(),
     },
 )
 
@@ -68,14 +71,35 @@ class ChatroomList(Resource):
 
 
 @login_required
-@ns.route('/<int:chatroom_id>/chats')
-class ChatList(Resource):
+@ns.route('/<int:chatroom_id>/messages')
+class ChatroomMessageList(Resource):
     @ns.marshal_with(message_model)
     def get(self, chatroom_id):
         """获取某个聊天室的聊天列表"""
-        message_list = ChatroomMessage.query.filter_by(chatroom_id=chatroom_id).all()
+
+        # 最后一条已加载消息的时间
+        last_message_time = request.args.get('last_message_time')
+        
+        # 构建基础查询，按照创建时间倒序
+        query = select(ChatroomMessage).where(
+            ChatroomMessage.chatroom_id == chatroom_id
+        ).order_by(
+            ChatroomMessage.created_at.desc()
+        )
+
+        # 增加创建时间的筛选条件，没有传时间表示首次加载
+        if last_message_time:
+            last_message_time = datetime.strptime(last_message_time, '%Y-%m-%d %H:%M:%S')
+            query = query.where(ChatroomMessage.created_at < last_message_time)
+
+        # 执行查询
+        limit = 10 if last_message_time else 20
+        message_list = db.session.scalars(query.limit(limit)).all()
+
+        # 添加发送人名称属性
         for message in message_list:
             message.sender_name = message.sender.name
+
         return message_list
 
     def post(self, chatroom_id):

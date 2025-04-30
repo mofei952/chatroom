@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from flask import request
 from flask_login import current_user, login_required
@@ -28,6 +29,7 @@ message_model = ns.model(
         'sender_id': fields.Integer(),
         'sender_name': fields.String(),
         'receiver_id': fields.Integer(),
+        'created_at': fields.String(),
     },
 )
 
@@ -36,8 +38,9 @@ def send_message(message):
     """发送个人消息"""
     sids = [
         user_id_and_sid_list[message.sender_id],
-        user_id_and_sid_list[message.receiver_id],
     ]
+    if message.receiver_id in user_id_and_sid_list:
+        sids.append(user_id_and_sid_list[message.receiver_id])
     message.sender_name = message.sender.name
     for sid in sids:
         socketio.send(
@@ -103,24 +106,37 @@ class FriendList(Resource):
 
 
 @login_required
-@ns.route('/<int:user_id>/chats')
+@ns.route('/<int:user_id>/messages')
 class FriendMessageList(Resource):
     @ns.marshal_with(message_model)
     def get(self, user_id):
         """获取好友聊天列表"""
-        chat_list = (
-            db.session.execute(
-                select(FriendMessage).where(
-                    (FriendMessage.sender_id == current_user.id) & (FriendMessage.receiver_id == user_id)
-                    | (FriendMessage.sender_id == user_id) & (FriendMessage.receiver_id == current_user.id)
-                )
-            )
-            .scalars()
-            .all()
+
+        # 最后一条已加载消息的时间
+        last_message_time = request.args.get('last_message_time')
+
+        # 构建基础查询，按照创建时间倒序
+        query = select(FriendMessage).where(
+            (FriendMessage.sender_id == current_user.id) & (FriendMessage.receiver_id == user_id)
+            | (FriendMessage.sender_id == user_id) & (FriendMessage.receiver_id == current_user.id)
+        ).order_by(
+            FriendMessage.created_at.desc()
         )
-        for chat in chat_list:
-            chat.sender_name = chat.sender.name
-        return chat_list
+
+        # 增加创建时间的筛选条件，没有传时间表示首次加载
+        if last_message_time:
+            last_message_time = datetime.strptime(last_message_time, '%Y-%m-%d %H:%M:%S')
+            query = query.where(FriendMessage.created_at < last_message_time)
+
+        # 执行查询
+        limit = 10 if last_message_time else 20
+        message_list = db.session.scalars(query.limit(limit)).all()
+
+        # 添加发送人名称属性
+        for message in message_list:
+            message.sender_name = message.sender.name
+
+        return message_list
 
     def post(self, user_id):
         """好友发送内容"""

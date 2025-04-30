@@ -1,4 +1,11 @@
 $(function () {
+    // 当前用户信息
+    current_user_id = $('.user').attr('data')
+    current_user_name = $('.user span').text()
+    // 当前聊天对象信息
+    current_chatroom_id = null
+    current_friend_id = null
+
     // 初始化ueditor
     var ue = UE.getEditor('editor', {
         //这里可以选择自己需要的工具按钮名称,此处仅选择如下七个
@@ -22,15 +29,13 @@ $(function () {
                 // event.stopPropagation()
                 console.log('发送')
                 text = ue.getContent()
-                if (ROOM) {
-                    chatroom_id = $('.chatpnl').attr('data')
-                    $.post('/api/v1/chatrooms/' + chatroom_id + '/chats', { content: text }, function (res) {
+                if (current_chatroom_id) {
+                    $.post('/api/v1/chatrooms/' + current_chatroom_id + '/messages', { content: text }, function (res) {
                         $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
                         ue.setContent('')
                     }, 'json')
-                } else if (FRIEND) {
-                    friend_id = $('.chatpnl').attr('data')
-                    $.post('/api/v1/friends/' + friend_id + '/chats', { content: text }, function (res) {
+                } else if (current_friend_id) {
+                    $.post('/api/v1/friends/' + current_friend_id + '/messages', { content: text }, function (res) {
                         $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
                         ue.setContent('')
                     }, 'json')
@@ -48,6 +53,32 @@ $(function () {
             return
         }
     });
+
+    // 在聊天窗口最前面插入消息列表
+    function prepend_messages(messages) {
+        // 插入消息前聊天窗口的高度和滚动条位置
+        scroll_height_before = $('.chat-content').prop('scrollHeight')
+        scroll_top_before = $('.chat-content').scrollTop()
+        // 插入消息列表
+        for (var i = 0; i < messages.length; i++) {
+            message = messages[i]
+            div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
+                '                <div class="chat">\n' +
+                '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
+                '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
+                '                        <div>' + message.sender_name + '</div>\n' +
+                '                    </div>\n' +
+                '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
+                '                    <div class="clear"></div>\n' +
+                '                </div>\n' +
+                '            </div>'
+            $('.chat-content').prepend(div)
+        }
+        // 插入消息后聊天窗口的高度
+        scroll_height_after = $('.chat-content').prop('scrollHeight')
+        // 保持滚动位置
+        $('.chat-content').scrollTop(scroll_height_after - scroll_height_before + scroll_top_before);
+    }
 
     // 点击聊天室按钮显示聊天室列表
     $('#chatroom_btn').click(function () {
@@ -89,44 +120,32 @@ $(function () {
     $('#room_list').on('click', 'li', function () {
         chatroom_name = $(this).find('span').eq(0).text()
         chatroom_id = $(this).closest('li').attr('data')
-        $.getJSON('/api/v1/chatrooms/' + chatroom_id + '/chats', function (chats) {
+        $.getJSON('/api/v1/chatrooms/' + chatroom_id + '/messages', function (messages) {
             // 如果已经在聊天室，先发出离开聊天室信号
-            if (ROOM) {
-                socket.emit('leave_chatroom', { name: user_name, room: ROOM });
+            if (current_chatroom_id) {
+                socket.emit('leave_chatroom', { name: current_user_name, room: current_chatroom_id });
             }
+            // 修改当前聊天对象信息
+            current_chatroom_id = chatroom_id
+            curretn_friend_id = null
             // 在页面上存储该聊天室信息
-            $('.chatpnl').attr('data', chatroom_id)
+            $('.chatpnl').attr('data', current_chatroom_id)
             $('.chathead').text(chatroom_name)
-            // 获取当前用户信息
-            current_user_id = $('.user').attr('data')
-            user_name = $('.user span').text()
             // 清空当前聊天区域
             $('.chat-content').empty()
             // 遍历获取的聊天记录，往聊天区域填充
-            for (var i = 0; i < chats.length; i++) {
-                chat = chats[i]
-                div = '<div class="chat' + (chat.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
-                    '                <div class="chat">\n' +
-                    '                    <div class="chatinfo ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
-                    '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-                    '                        <div>' + chat.sender_name + '</div>\n' +
-                    '                    </div>\n' +
-                    '                    <div class="chatcontent ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">' + chat.content + '</div>\n' +
-                    '                    <div class="clear"></div>\n' +
-                    '                </div>\n' +
-                    '            </div>'
-                $('.chat-content').append(div)
-            }
+            prepend_messages(messages)
+            // 记录最后一条消息的时间
+            if (messages.length != 0) {
+                last_message_time = messages.at(-1).created_at
+            }   
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             setTimeout(function () {
                 $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             }, 100);
             // 发出进入聊天室信号
-            socket.emit('join_chatroom', { name: user_name, room: chatroom_id });
-            // 设置全局变量
-            ROOM = chatroom_id
-            FRIEND = null
+            socket.emit('join_chatroom', { name: current_user_name, room: current_chatroom_id });
             // 显示editor
             $('#editor').show()
         })
@@ -173,61 +192,83 @@ $(function () {
     $('#friend_list').on('click', 'li', function () {
         friend_name = $(this).find('span').eq(0).text()
         friend_id = $(this).closest('li').attr('data')
-        $.getJSON('/api/v1/friends/' + friend_id + '/chats', function (chats) {
+        $.getJSON('/api/v1/friends/' + friend_id + '/messages', function (messages) {
             // 如果已经在聊天室，先发出离开聊天室信号
-            if (ROOM) {
-                socket.emit('leave_chatroom', { name: user_name, room: ROOM });
+            if (current_chatroom_id) {
+                socket.emit('leave_chatroom', { name: current_user_name, room: current_chatroom_id });
             }
+            // 修改当前聊天对象信息
+            current_chatroom_id = null
+            current_friend_id = friend_id
             // 在页面上存储该好友信息
-            $('.chatpnl').attr('data', friend_id)
+            $('.chatpnl').attr('data', current_friend_id)
             $('.chathead').text(friend_name)
-            // 获取当前用户信息
-            current_user_id = $('.user').attr('data')
-            user_name = $('.user span').text()
             // 清空当前聊天区域
             $('.chat-content').empty()
             // 遍历获取的聊天记录，往聊天区域填充
-            for (var i = 0; i < chats.length; i++) {
-                chat = chats[i]
-                div = '<div class="chat' + (chat.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
-                    '                <div class="chat">\n' +
-                    '                    <div class="chatinfo ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
-                    '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-                    '                        <div>' + chat.sender_name + '</div>\n' +
-                    '                    </div>\n' +
-                    '                    <div class="chatcontent ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">' + chat.content + '</div>\n' +
-                    '                    <div class="clear"></div>\n' +
-                    '                </div>\n' +
-                    '            </div>'
-                $('.chat-content').append(div)
-            }
+            prepend_messages(messages)
+            // 记录最后一条消息的时间
+            if (messages.length != 0) {
+                last_message_time = messages.at(-1).created_at
+            }   
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             setTimeout(function () {
                 $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             }, 100);
-            // 设置全局变量
-            ROOM = null
-            FRIEND = friend_id
             // 显示editor
             $('#editor').show()
         })
     })
 
+    is_loading = false
+    scroll_debounce_timer = null
+    last_message_time = null
+    // 滑动到聊天框顶部时加载更早之前的聊天记录
+    $('.chat-content').on('scroll', function() {
+        clearTimeout(scroll_debounce_timer);
+        scroll_debounce_timer = setTimeout(function() {
+            // 判断是否接近顶部（距离顶部 < 50px）
+            if ($('.chat-content').scrollTop() < 50 && !is_loading) {
+                load_more_message();
+            }
+        }, 100); // 防抖延迟100ms
+    });
+    function load_more_message() {
+        is_loading = true
+        if (current_chatroom_id) {
+            $.getJSON('/api/v1/chatrooms/' + current_chatroom_id + '/messages?last_message_time=' + last_message_time, function (messages) {
+                if (messages.length > 0) {
+                    prepend_messages(messages)
+                    last_message_time = messages.at(-1).created_at
+                }
+            }).always(function() {
+                is_loading = false
+            });
+        } else {
+            $.getJSON('/api/v1/friends/' + current_friend_id + '/messages?last_message_time=' + last_message_time, function (messages) {
+                if (messages.length > 0) {
+                    prepend_messages(messages)
+                    last_message_time = messages.at(-1).created_at
+                }
+            }).always(function() {
+                is_loading = false
+            });
+        }
+    }
+
 })
-ROOM = null
-FRIEND = null
+
 var socket = io('http://' + location.hostname + ':' + location.port + '/websocket');
 socket.on('connect', function () { // 发送到服务器的通信内容
     // socket.emit('join_chatroom', {name:'11',room: '1'});
 });
 socket.on('message', function (msg) {
     //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
-    current_user_id = $('.user').attr('data')
     console.log('msg', msg)
     chat = JSON.parse(msg)
     console.log(chat)
-    if (ROOM && chat.chatroom_id == ROOM) {
+    if (current_chatroom_id && chat.chatroom_id == current_chatroom_id) {
         if (chat.sender_name == 'admin') {
             div = '<div class="clear"></div>\n' +
                 '            <div class="cahtnotice">\n' +
@@ -245,7 +286,7 @@ socket.on('message', function (msg) {
                 '                </div>\n' +
                 '            </div>'
         }
-    } else if (FRIEND && (chat.sender_id == FRIEND || chat.receiver_id == FRIEND)) {
+    } else if (current_friend_id && (chat.sender_id == current_friend_id || chat.receiver_id == current_friend_id)) {
         div = '<div class="chat' + (chat.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
             '                <div class="chat">\n' +
             '                    <div class="chatinfo ' + (chat.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
