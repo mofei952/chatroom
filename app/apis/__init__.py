@@ -1,5 +1,6 @@
 from flask import Blueprint
 from flask_restx import Api
+
 from app.apis.chatrooms import ns as chatrooms_ns
 from app.apis.friends import ns as friends_ns
 

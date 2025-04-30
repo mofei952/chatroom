@@ -32,8 +32,7 @@ def deploy():
 
 @app.cli.command('init_db')
 def init_db():
-    from app import db
-    from app import models
+    from app import db, models
 
     db.create_all()
 
@@ -41,8 +40,7 @@ def init_db():
 @app.cli.command('recreate_db')
 def recreate_db():
     """重建数据库，会删除所有数据"""
-    from app import db
-    from app import models
+    from app import db, models
 
     db.drop_all()
     db.create_all()

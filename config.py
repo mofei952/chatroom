@@ -5,8 +5,8 @@
 # @Time    : 2018/9/22 12:49
 # @File    : confg.py
 # @Software: PyCharm
-from os import path
 import os
+from os import path
 
 SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret'
 

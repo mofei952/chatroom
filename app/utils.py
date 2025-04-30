@@ -5,9 +5,9 @@
 # @Time    : 2018/10/1 23:52
 # @File    : utils.py
 # @Software: PyCharm
+import datetime
 import json
 
-import datetime
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
 

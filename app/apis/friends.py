@@ -1,13 +1,14 @@
-from datetime import datetime
 import json
+from datetime import datetime
+
 from flask import request
 from flask_login import current_user, login_required
 from flask_restx import Namespace, Resource, abort, fields
 from sqlalchemy import select
 
 from app import db, socketio
-from app.models import Friendships, FriendMessage, User
 from app.apis.socketio import user_id_and_sid_list
+from app.models import FriendMessage, Friendships, User
 from app.utils import AlchemyEncoder
 
 ns = Namespace('friends', description='好友相关操作')
@@ -116,16 +117,22 @@ class FriendMessageList(Resource):
         last_message_time = request.args.get('last_message_time')
 
         # 构建基础查询，按照创建时间倒序
-        query = select(FriendMessage).where(
-            (FriendMessage.sender_id == current_user.id) & (FriendMessage.receiver_id == user_id)
-            | (FriendMessage.sender_id == user_id) & (FriendMessage.receiver_id == current_user.id)
-        ).order_by(
-            FriendMessage.created_at.desc()
+        query = (
+            select(FriendMessage)
+            .where(
+                (FriendMessage.sender_id == current_user.id)
+                & (FriendMessage.receiver_id == user_id)
+                | (FriendMessage.sender_id == user_id)
+                & (FriendMessage.receiver_id == current_user.id)
+            )
+            .order_by(FriendMessage.created_at.desc())
         )
 
         # 增加创建时间的筛选条件，没有传时间表示首次加载
         if last_message_time:
-            last_message_time = datetime.strptime(last_message_time, '%Y-%m-%d %H:%M:%S')
+            last_message_time = datetime.strptime(
+                last_message_time, '%Y-%m-%d %H:%M:%S'
+            )
             query = query.where(FriendMessage.created_at < last_message_time)
 
         # 执行查询

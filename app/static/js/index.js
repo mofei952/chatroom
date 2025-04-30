@@ -138,7 +138,7 @@ $(function () {
             // 记录最后一条消息的时间
             if (messages.length != 0) {
                 last_message_time = messages.at(-1).created_at
-            }   
+            }
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             setTimeout(function () {
@@ -210,7 +210,7 @@ $(function () {
             // 记录最后一条消息的时间
             if (messages.length != 0) {
                 last_message_time = messages.at(-1).created_at
-            }   
+            }
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             setTimeout(function () {
@@ -225,9 +225,9 @@ $(function () {
     scroll_debounce_timer = null
     last_message_time = null
     // 滑动到聊天框顶部时加载更早之前的聊天记录
-    $('.chat-content').on('scroll', function() {
+    $('.chat-content').on('scroll', function () {
         clearTimeout(scroll_debounce_timer);
-        scroll_debounce_timer = setTimeout(function() {
+        scroll_debounce_timer = setTimeout(function () {
             // 判断是否接近顶部（距离顶部 < 50px）
             if ($('.chat-content').scrollTop() < 50 && !is_loading) {
                 load_more_message();
@@ -242,7 +242,7 @@ $(function () {
                     prepend_messages(messages)
                     last_message_time = messages.at(-1).created_at
                 }
-            }).always(function() {
+            }).always(function () {
                 is_loading = false
             });
         } else {
@@ -251,7 +251,7 @@ $(function () {
                     prepend_messages(messages)
                     last_message_time = messages.at(-1).created_at
                 }
-            }).always(function() {
+            }).always(function () {
                 is_loading = false
             });
         }

@@ -10,6 +10,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, Integer
+
 from app import db
 
 
@@ -87,6 +88,8 @@ class FriendMessage(BaseModel):
     receiver = db.relationship('User', foreign_keys=[receiver_id])
 
     __table_args__ = (
-        db.Index('idx_sender_receiver_create_at', 'sender_id', 'receiver_id', 'created_at'),
+        db.Index(
+            'idx_sender_receiver_create_at', 'sender_id', 'receiver_id', 'created_at'
+        ),
         db.Index('idx_receiver_sender_create_at', 'sender_id', 'created_at'),
     )

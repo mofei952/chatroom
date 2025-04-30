@@ -25,8 +25,8 @@ def create_app():
     login_manager.init_app(app)
     socketio.init_app(app, async_mode=async_mode)
 
-    from app.views import bp as web_bp
     from app.apis import bp as api_bp
+    from app.views import bp as web_bp
 
     app.register_blueprint(web_bp)
     app.register_blueprint(api_bp, url_prefix='/api/v1')
