@@ -141,9 +141,6 @@ $(function () {
             }
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-            setTimeout(function () {
-                $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-            }, 100);
             // 发出进入聊天室信号
             socket.emit('join_chatroom', { name: current_user_name, room: current_chatroom_id });
             // 显示editor
@@ -213,9 +210,6 @@ $(function () {
             }
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-            setTimeout(function () {
-                $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-            }, 100);
             // 显示editor
             $('#editor').show()
         })
@@ -298,7 +292,4 @@ socket.on('json', function (message) {
     }
     $('.chat-content').append(div)
     $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-    setTimeout(function () {
-        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-    }, 100);
 });
