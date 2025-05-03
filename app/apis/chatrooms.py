@@ -173,10 +173,20 @@ class JoinChatroom(Resource):
         chatroom_member = ChatroomMember(chatroom_id=chatroom_id, user_id=user_id)
         db.session.add(chatroom_member)
 
+        # 新增“新成员加入聊天室”的系统消息
+        message = ChatroomMessage(
+            content=f'新成员【{current_user.name}】加入了聊天室',
+            chatroom_id=chatroom_id,
+        )
+        db.session.add(message)
+        
         # 更新聊天室活跃时间
         chatroom.last_active_time = datetime.now()
 
         db.session.commit()
+        
+        # 发送实时消息
+        send_room_message(message)
 
         return chatroom
 

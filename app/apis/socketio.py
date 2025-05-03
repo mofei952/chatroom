@@ -21,12 +21,11 @@ def join_chatroom(data):
     name = data.get('name')
     room = 'room' + str(data.get('room'))
     join_room(room)
-    data = {
-        'sender_name': 'admin',
+    message = {
         'chatroom_id': data.get('room'),
         'content': name + '进入了聊天室',
     }
-    send(json.dumps(data), room=room)
+    send(message, json=True, room=room)
 
 
 @socketio.on('leave_chatroom', namespace='/websocket')
@@ -35,9 +34,8 @@ def leave_chatroom(data):
     name = data.get('name')
     room = 'room' + str(data.get('room'))
     leave_room(room)
-    data = {
-        'sender_name': 'admin',
+    message = {
         'chatroom_id': data.get('room'),
         'content': name + '离开了聊天室',
     }
-    send(json.dumps(data), room=room)
+    send(message, json=True, room=room)

@@ -66,16 +66,23 @@ $(function () {
         // 插入消息列表
         for (var i = 0; i < messages.length; i++) {
             message = messages[i]
-            div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
-                '                <div class="chat">\n' +
-                '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
-                '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-                '                        <div>' + message.sender_name + '</div>\n' +
-                '                    </div>\n' +
-                '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
-                '                    <div class="clear"></div>\n' +
-                '                </div>\n' +
-                '            </div>'
+            if (!message.sender_id) {
+                div = '<div class="clear"></div>\n' +
+                    '            <div class="chatnotice">\n' +
+                    '                <p>---------' + message.content + '--------</p>\n' +
+                    '            </div>'
+            } else {
+                div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
+                    '                <div class="chat">\n' +
+                    '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
+                    '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
+                    '                        <div>' + message.sender_name + '</div>\n' +
+                    '                    </div>\n' +
+                    '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
+                    '                    <div class="clear"></div>\n' +
+                    '                </div>\n' +
+                    '            </div>'
+            }
             $('.chat-content').prepend(div)
         }
         // 插入消息后聊天窗口的高度
@@ -334,9 +341,9 @@ socket.on('json', function (message) {
     //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
     console.log('receive: ', message)
     if (current_chatroom_id && message.chatroom_id == current_chatroom_id) {
-        if (message.sender_name == 'admin') {
+        if (!message.sender_id) {
             div = '<div class="clear"></div>\n' +
-                '            <div class="cahtnotice">\n' +
+                '            <div class="chatnotice">\n' +
                 '                <p>---------' + message.content + '--------</p>\n' +
                 '            </div>'
         } else {
