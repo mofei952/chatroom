@@ -13,6 +13,7 @@ $(function () {
             ['simpleupload', /*'insertimage',*/ 'emotion', 'scrawl']
         ],
         elementPathEnabled: false,
+        initialFrameWidth: '100%',
         initialFrameHeight: 98,
         maximumWords: 100,
         wordOverFlowMsg: '<span style="color:red;">你输入的字符个数已经超出最大允许值！</span>',
@@ -151,8 +152,9 @@ $(function () {
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             // 发出进入聊天室信号
             socket.emit('join_chatroom', { name: current_user_name, room: current_chatroom_id });
-            // 显示editor
+            // 显示editor并清空
             $('#editor').show()
+            ue.setContent('')
             // 请求接口查询聊天室成员列表
             if(label_text == '私密') {
                 $('.memberpnl').show()
