@@ -26,9 +26,12 @@ $(function () {
             // 回车发送
             if (event.code == 'Enter') {
                 event.preventDefault();
-                // event.stopPropagation()
-                console.log('send')
+                // 空白内容不发送
                 text = ue.getContent()
+                if (!text) {
+                    return
+                }
+                console.log('send')
                 if (current_chatroom_id) {
                     $.post('/api/v1/chatrooms/' + current_chatroom_id + '/messages', { content: text }, function (res) {
                         $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
