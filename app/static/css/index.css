@@ -1,76 +1,366 @@
-*{ margin:0; padding:0; box-sizing: border-box;}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-body{ font-size:14px; font-family:微软雅黑;font-style:normal; background:url('/static/image/bg.jpg') no-repeat; background-size:100% 100%;}
-
-
-a,a:hover{ text-decoration:none}
-
-a,a:hover{  transition:background 0.5s linear;-webkit-transition:background 0.5s linear;-moz-transition:background 0.5s linear;-o-transition:background 0.5s linear;}
-
-em, i{font-style: normal;}
-
-ul, ol, li{list-style: none;}
-
-img{ border:none;vertical-align:middle;}
-
-/*input,select,textarea{outline:none;border:none;background:none;}*/
-
-textarea{resize:none;}
-
-p{line-height:22px;}
-
-.fl{float: left;}
-
-.fr{float: right;}
-
-.clear{ clear:both; height:0px; width:100%; overflow:hidden;}
-
-.position{position:relative;}
+body {
+    font-size: 14px;
+    font-family: 微软雅黑;
+    font-style: normal;
+    background: url('/static/image/bg.jpg') no-repeat;
+    background-size: 100% 100%;
+}
 
 
+a,
+a:hover {
+    text-decoration: none
+}
 
-/*公共样式
-.layout{ width:1100px; display:table; margin:0 auto;}*/
+a,
+a:hover {
+    transition: background 0.5s linear;
+    -webkit-transition: background 0.5s linear;
+    -moz-transition: background 0.5s linear;
+    -o-transition: background 0.5s linear;
+}
 
-/*样式*/
-html,body{height:100%}
-body{padding-top: 20px}
-.container{width:1000px;height:580px;margin:0 auto; padding:0; background-color: #f9f9f9 }
-.userpnl{width: 30%; float:left;    border-right: 1px #f1f1f1 solid;}
-.chatpnl{width: 70%;float:right;}
+em,
+i {
+    font-style: normal;
+}
 
-.user{margin: 20px;height:48px}
-.user img{width: 48px; height: auto ;}
-.user span{font-size: 16px; margin-left: 10px}
-.nav{width:50%; text-align: center;padding: 16px 0px;background-color:#f1f1f1;float: left;cursor:pointer;position:relative}
-.nav:hover { background-color: #ccc;}
-.nav:hover .add_btn{display:inline}
-.add_btn{display:none;position: absolute;right:10px;}
-.chatlist {height:430px; overflow: auto;}
-.chatlist li{ display:inline-block; width: 100%; cursor:pointer}
-.qun{padding:5px 20px;}
-.qun:hover{ background-color: #ccc;}
-.qun img{width: 48px; height: auto ;}
-.qun span{font-size: 16px; margin-left: 10px}
-.time{float: right;    margin-top: 10px;font-size: 12px;color: #ddd;}
+ul,
+ol,
+li {
+    list-style: none;
+}
 
-.chathead{ text-align: center; border-bottom: 1px #f1f1f1 solid; margin:0; padding: 12px 0;height:47px;}
-.chatleft{float: left;}
-.chat{padding: 10px 0;min-height:48px;width: 400px;}
-.chat .chatinfo{text-align:center;max-width: 20%;}
-.chat .chatinfo img{width: 32px; height: auto ;margin:0 10px}
-.chat .chatcontent{border: 1px #ccc solid;border-radius: 5px;padding: 12px;max-width: 80%;word-break: break-all;word-wrap:break-word;}
-.chat .chatcontent img{max-height:80px}
-/*.chat p.fr{margin-left: 0px;margin-right: 10px;}*/
-.chatright{float: right;}
-.chat-content{height: 380px; overflow: auto;border-bottom: 1px #f1f1f1 solid}
-.chat-content img{width: 50px; height: 50px}
-#editor{height:153px; display:none}
-#edui1{border-radius: 0;border: 0;}
-#edui1_toolbarbox{box-shadow: 0 0 0 rgba(204, 204, 204, 0.6);border-top-left-radius: 0;border-top-right-radius: 0;}
-#edui1_toolbarboxouter{-webkit-border-radius: 0 0 0 0;-moz-border-radius: 0 0 0 0;border-radius: 0 0 0 0;box-shadow: 0 0 0;background-image: none;background-color: #f9f9f9;    border-bottom: 1px solid #f1f1f1;}
-.edui-editor-toolbarboxinner{-webkit-border-radius: 0 0 0 0;-moz-border-radius: 0 0 0 0;border-radius: 0 0 0 0;}
-#edui1_wordcount{border-top: 1px solid #f1f1f1;}
-.cahtnotice{margin: 0 auto; text-align: center;color:#999;padding: 10px; }
-/*img { max-width: 100%; !*图片自适应宽度*!  }*/
-/*#edui1_imagescale{width:200px!important}*/
+img {
+    border: none;
+    vertical-align: middle;
+}
+
+textarea {
+    resize: none;
+}
+
+p {
+    line-height: 22px;
+}
+
+.fl {
+    float: left;
+}
+
+.fr {
+    float: right;
+}
+
+.clear {
+    clear: both;
+    height: 0px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.position {
+    position: relative;
+}
+
+
+
+/*总体布局样式*/
+html,
+body {
+    height: 100%
+}
+
+body {
+    padding-top: 20px
+}
+
+.container {
+    width: 1000px;
+    height: 580px;
+    display: flex;
+    margin: 0 auto;
+    padding: 0;
+    background-color: #f9f9f9
+}
+
+.userpnl {
+    width: 250px;
+    border-right: 1px #f1f1f1 solid;
+    /* 禁止缩小 */
+    flex-shrink: 0;
+    /* 禁止扩大 */
+    flex-grow: 0;
+}
+
+.chatpnl {
+    /* 占据剩余空间 */
+    flex-grow: 1;
+    /* 允许缩小 */
+    min-width: 0;
+}
+
+.memberpnl {
+    width: 15%;
+    border-left: 1px #f1f1f1 solid;
+    /* 禁止缩小 */
+    flex-shrink: 0;
+}
+
+/* userpanel样式 */
+.user {
+    margin: 20px;
+    height: 48px
+}
+
+.user img {
+    width: 48px;
+    height: auto;
+}
+
+.user span {
+    font-size: 16px;
+    margin-left: 10px
+}
+
+.nav {
+    width: 50%;
+    text-align: center;
+    padding: 16px 0px;
+    background-color: #f1f1f1;
+    float: left;
+    cursor: pointer;
+    position: relative
+}
+
+.nav:hover {
+    background-color: #ccc;
+}
+
+.nav:hover .add_btn {
+    display: inline
+}
+
+.nav .add_btn {
+    display: none;
+    position: absolute;
+    right: 10px;
+}
+
+.chatlist {
+    height: 430px;
+    overflow: auto;
+}
+
+.chatlist li {
+    display: inline-block;
+    width: 100%;
+    cursor: pointer
+}
+
+.qun {
+    padding: 5px 10px;
+}
+
+.qun:hover {
+    background-color: #ccc;
+}
+
+.qun img {
+    width: 36px;
+    height: auto;
+}
+
+.qun .name {
+    font-size: 14px;
+    margin-left: 5px;
+    vertical-align: middle;
+    /* 禁止换行 */
+    white-space: nowrap;
+    /* 超出部分隐藏 */
+    overflow: hidden;
+    /* 超出部分显示... */
+    text-overflow: ellipsis;
+    /* 最大宽度 */
+    max-width: 150px;
+    /* 确保宽度生效 */
+    display: inline-block;
+}
+
+.qun .right {
+    height: 36px;
+    float: right;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    font-size: 10px;
+    color: #ddd;
+}
+
+.qun .label {
+    font-size: 9px;
+    color: chocolate;
+    padding: 0;
+}
+
+/* chatpanel样式 */
+.chathead {
+    text-align: center;
+    border-bottom: 1px #f1f1f1 solid;
+    margin: 0;
+    padding: 12px 0;
+    height: 46px;
+}
+
+.chatleft {
+    float: left;
+}
+
+.chat {
+    padding: 10px 0;
+    min-height: 48px;
+    width: 400px;
+}
+
+.chat .chatinfo {
+    text-align: center;
+    max-width: 20%;
+}
+
+.chat .chatinfo img {
+    width: 32px;
+    height: auto;
+    margin: 0 10px
+}
+
+.chat .chatcontent {
+    border: 1px #ccc solid;
+    border-radius: 5px;
+    padding: 12px;
+    max-width: 80%;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+.chat .chatcontent img {
+    max-height: 80px
+}
+
+.chatright {
+    float: right;
+}
+
+.chat-content {
+    height: 380px;
+    overflow: auto;
+    border-bottom: 1px #f1f1f1 solid
+}
+
+.chat-content img {
+    width: 50px;
+    height: 50px
+}
+
+#editor {
+    width: 70%;
+    height: 153px;
+    display: none
+}
+
+#edui1 {
+    border-radius: 0;
+    border: 0;
+}
+
+#edui1_toolbarbox {
+    box-shadow: 0 0 0 rgba(204, 204, 204, 0.6);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+#edui1_toolbarboxouter {
+    -webkit-border-radius: 0 0 0 0;
+    -moz-border-radius: 0 0 0 0;
+    border-radius: 0 0 0 0;
+    box-shadow: 0 0 0;
+    background-image: none;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.edui-editor-toolbarboxinner {
+    -webkit-border-radius: 0 0 0 0;
+    -moz-border-radius: 0 0 0 0;
+    border-radius: 0 0 0 0;
+}
+
+#edui1_wordcount {
+    border-top: 1px solid #f1f1f1;
+}
+
+.cahtnotice {
+    margin: 0 auto;
+    text-align: center;
+    color: #999;
+    padding: 10px;
+}
+
+/* memeberpanel样式 */
+.title {
+    width: 100%;
+    text-align: center;
+    padding: 13px 0px;
+    background-color: #f1f1f1;
+    cursor: pointer;
+    position: relative
+}
+
+.title:hover .add_btn {
+    display: inline
+}
+
+.title .add_btn {
+    display: none;
+    position: absolute;
+    right: 10px;
+}
+
+.member {
+    padding: 5px 10px;
+}
+
+.member:hover {
+    background-color: #ccc;
+}
+
+.member img {
+    width: 24px;
+    height: auto;
+}
+
+.member .name {
+    font-size: 14px;
+    vertical-align: middle;
+    /* 禁止换行 */
+    white-space: nowrap;
+    /* 超出部分隐藏 */
+    overflow: hidden;
+    /* 超出部分显示... */
+    text-overflow: ellipsis;
+    /* 最大宽度 */
+    max-width: 100px;
+    /* 确保宽度生效 */
+    display: inline-block;
+}
+
+#invitation_link {
+    color: #999;
+    word-break: break-all;
+    white-space: pre-wrap;
+}

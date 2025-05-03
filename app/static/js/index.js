@@ -91,13 +91,15 @@ $(function () {
                 li = '<li data="' + room.id + '">\n' +
                     '                <div class="qun">\n' +
                     '                    <img src="/static/image/user.png" alt="聊天室" class="qunicon">\n' +
-                    '                    <span>' + room.name + '</span>\n' +
-                    '                    <span class="time">12:08</span>\n' +
+                    '                    <span class="name">' + room.name + '</span>\n' +
+                    '                    <div class="right">\n' + 
+                    '                        <span class="label">' + (room.is_private ? '私密' : '') + '</span>\n' +
+                    '                        <span class="time">12:08</span>\n' +
+                    '                    </div>\n' +
                     '                </div>\n' +
                     '            </li>'
                 $('#room_list').append(li)
             }
-
         })
     })
     // 点击+按钮显示创建聊天室窗口
@@ -106,11 +108,12 @@ $(function () {
     })
     // 创建聊天室窗口的创建按钮事件
     $('#add_chatroom_confirm_btn').click(function () {
-        name = $('#chatroom_name').val().trim()
+        chatroom_name = $('#chatroom_name').val().trim()
+        chatroom_type = $("input[name='chatroom_type']:checked").val();
         $.post({
             url: '/api/v1/chatrooms',
             contentType: 'application/json',
-            data: JSON.stringify({ name: name })
+            data: JSON.stringify({ name: chatroom_name, is_private: chatroom_type == 'private' })
         }).done(function (res) {
             console.log('create chatroom: ', res);
             location.reload()
@@ -120,6 +123,8 @@ $(function () {
     $('#room_list').on('click', 'li', function () {
         chatroom_name = $(this).find('span').eq(0).text()
         chatroom_id = $(this).closest('li').attr('data')
+        label_text = $(this).closest('li').find('.label').text()
+        // 请求接口查询聊天室最近的消息列表
         $.getJSON('/api/v1/chatrooms/' + chatroom_id + '/messages', function (messages) {
             // 如果已经在聊天室，先发出离开聊天室信号
             if (current_chatroom_id) {
@@ -145,6 +150,25 @@ $(function () {
             socket.emit('join_chatroom', { name: current_user_name, room: current_chatroom_id });
             // 显示editor
             $('#editor').show()
+            // 请求接口查询聊天室成员列表
+            if(label_text == '私密') {
+                $('.memberpnl').show()
+                $.getJSON('/api/v1/chatrooms/' + chatroom_id + '/members', function (members) {
+                    $('#member_list').empty()
+                    for (var i = 0; i < members.length; i++) {
+                        member = members[i]
+                        li = '<li data="' + member.id + '">\n' +
+                                '<div class="member">\n' +
+                                    '<img src="/static/image/user.png" alt="用户头像" class="qunicon">\n' +
+                                    '<span class="name">' + member.nickname + '</span>\n' +
+                                '</div>\n' +
+                            '</li>'
+                        $('#member_list').append(li)
+                    }
+                })
+            } else {
+                $('.memberpnl').hide()
+            }
         })
     })
 
@@ -159,7 +183,7 @@ $(function () {
                 li = '<li data="' + friend.id + '">\n' +
                     '                <div class="qun">\n' +
                     '                    <img src="/static/image/user.png" alt="用户头像" class="qunicon">\n' +
-                    '                    <span>' + friend.name + '</span>\n' +
+                    '                    <span class="name">' + friend.name + '</span>\n' +
                     '                    <span class="time">12:08</span>\n' +
                     '                </div>\n' +
                     '            </li>'
@@ -251,6 +275,50 @@ $(function () {
         }
     }
 
+    invitation_link = null
+    // 点击成员列表的+按钮显示创建邀请链接窗口
+    $('#add_member_btn').click(function () {
+        $('#invitation_link').text('')
+        $('#add_member_confirm_btn').text('生成')
+        $('#add_member_modal').modal()
+    })
+    // 创建聊天室窗口的创建按钮事件
+    $('#add_member_confirm_btn').click(function () {
+        if($('#add_member_confirm_btn').text() == '生成') {
+            valid_days = $('#valid_days').val()
+            $.getJSON('/api/v1/chatrooms/' + current_chatroom_id + '/invitation_link?valid_days=' + valid_days, function (link) {
+                invitation_link = link
+                $('#invitation_link').text('邀请链接：\n' + link)
+                $('#add_member_confirm_btn').text('复制')
+            })
+        } else {
+            navigator.clipboard.writeText(invitation_link)
+            .then(function() {
+                alert("已复制到剪贴板！");
+            })
+            .catch(function(err) {
+                alert("复制失败，请手动复制");
+            });
+        }
+    })
+
+    // 初始化时模拟点击聊天室按钮
+    $('#chatroom_btn').click()
+
+    // 如果有join_token参数，请求join接口加入聊天室
+    url_params = new URLSearchParams(window.location.search);
+    if (url_params.has('join_token')) {
+        join_token = url_params.get('join_token')
+        console.log(join_token)
+        $.post({
+            url: '/api/v1/chatrooms/join',
+            contentType: 'application/json',
+            data: JSON.stringify({ join_token: join_token })
+        }).done(function (chatroom) {
+            alert('成功加入聊天室【' + chatroom.name + '】')
+            location.href = location.pathname;
+        });
+    }
 })
 
 var socket = io('http://' + location.hostname + ':' + location.port + '/websocket');

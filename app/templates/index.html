@@ -39,11 +39,21 @@
             </div>
             <div class="clear"></div>
             <ul id="room_list" class="chatlist" style="display: {{ 'block' if tab == 'chatroom' else 'none' }};">
+                <!-- <li data="1">
+                    <div class="qun">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                        <span class="name">顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶</span>
+                        <div class="right">
+                            <span class="label">私密</span>
+                            <span class="time">12:08</span>
+                        </div>
+                    </div>
+                </li> -->
                 {% for room in chatrooms %}
                 <li data="{{ room.id }}">
                     <div class="qun">
                         <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
-                        <span>{{ room.name }}</span>
+                        <span class="name">{{ room.name }}</span>
                         <span class="time">12:08</span>
                     </div>
                 </li>
@@ -54,7 +64,7 @@
                 <li data="{{ friend.id }}">
                     <div class="qun">
                         <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
-                        <span>{{ friend.name }}</span>
+                        <span class="name">{{ friend.name }}</span>
                         <span class="time">12:08</span>
                     </div>
                 </li>
@@ -96,6 +106,20 @@
                 <script type="text/plain" id="editor"></script>
             </div>
         </div>
+        <div class="memberpnl" style="display: none;">
+            <div class="title">
+                <span>成员列表</span>
+                <a id="add_member_btn" class="add_btn">+</a>
+            </div>
+            <ul id="member_list" class="memberlist" style="display: block;">
+                <!-- <li data="1">
+                    <div class="member">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像">
+                        <span class="name">成员名称测试</span>
+                    </div>
+                </li> -->
+            </ul>
+        </div>
         <div class="modal fade bs-example-modal-sm" id="add_chatroom_modal" tabindex="-1" role="dialog"
             aria-labelledby="myModalLabel">
             <div class="modal-dialog modal-sm" role="document" aria-hidden="true">
@@ -107,7 +131,16 @@
                     </div>
                     <div class="modal-body">
                         <span>名称：</span>
-                        <input id="chatroom_name" name="chatroom_name" />
+                        <input id="chatroom_name" name="chatroom_name" /><br>
+                        <span>类型：</span>
+                        <label for="public">
+                            <input type="radio" id="public" name="chatroom_type" value="public" checked>
+                            公开
+                        </label>
+                        <label for="private">
+                            <input type="radio" id="private" name="chatroom_type" value="private">
+                            私密
+                        </label>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -136,7 +169,29 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade bs-example-modal-sm" id="add_member_modal" tabindex="-1" role="dialog"
+            aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document" aria-hidden="true">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">生成邀请链接</h4>
+                    </div>
+                    <div class="modal-body">
+                        <span>有效期：</span>
+                        <input id="valid_days" name="valid_days" type="number"/><br>
+                        <span id="invitation_link"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button id="add_member_confirm_btn" type="button" class="btn btn-primary">生成</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    
 </body>
 
 </html>

@@ -60,24 +60,8 @@ class RegisterForm(FlaskForm):
 @login_required
 def index():
     """首页"""
-    chatrooms = db.session.scalars(
-        select(Chatroom).where(Chatroom.is_deleted.is_(False))
-    ).all()
-    friends = db.session.scalars(
-        select(User).where(
-            User.id.in_(
-                select(Friendships.friend_id).where(
-                    Friendships.user_id == current_user.id,
-                    Friendships.is_deleted.is_(False),
-                )
-            )
-        )
-    ).all()
-
     return render_template(
         'index.html',
-        chatrooms=chatrooms,
-        friends=friends,
         tab=request.args.get('tab', 'chatroom'),
     )
 

@@ -54,8 +54,19 @@ class User(BaseModel):
 
 
 class Chatroom(BaseModel):
+    """ 聊天室 """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+    is_private = db.Column(db.Boolean, default=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    last_active_time = db.Column(DateTime, default=datetime.now)
+
+
+class ChatroomMember(BaseModel):
+    """ 聊天室成员 """
+    id = db.Column(db.Integer, primary_key=True)
+    chatroom_id = db.Column(db.Integer, db.ForeignKey('chatroom.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
 class ChatroomMessage(BaseModel):

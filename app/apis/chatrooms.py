@@ -1,12 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timedelta, UTC
 
-from flask import request
+from flask import current_app, request, url_for
 from flask_login import current_user, login_required
 from flask_restx import Namespace, Resource, abort, fields, marshal
+import jwt
 from sqlalchemy import select
 
 from app import db, socketio
-from app.models import Chatroom, ChatroomMessage
+from app.models import Chatroom, ChatroomMember, ChatroomMessage, User
 
 ns = Namespace('chatrooms', description='聊天室相关操作')
 
@@ -15,6 +16,17 @@ chatroom_model = ns.model(
     {
         'id': fields.Integer(),
         'name': fields.String(required=True),
+        'is_private': fields.Boolean(required=True),
+    },
+)
+
+
+chatroom_member_model = ns.model(
+    'chatroom member model',
+    {
+        'id': fields.Integer(),
+        'name': fields.String(),
+        'nickname': fields.String(),
     },
 )
 
@@ -51,7 +63,20 @@ class ChatroomList(Resource):
     def get(self):
         """获取聊天室列表"""
         chatrooms = db.session.scalars(
-            select(Chatroom).where(Chatroom.is_deleted.is_(False))
+            select(Chatroom)
+            .where(
+                Chatroom.is_deleted.is_(False),
+                Chatroom.is_private.is_(False)
+                | (
+                    Chatroom.is_private.is_(True)
+                    & Chatroom.id.in_(
+                        select(ChatroomMember.chatroom_id).where(
+                            ChatroomMember.user_id == current_user.id
+                        )
+                    )
+                ),
+            )
+            .order_by(Chatroom.last_active_time.desc())
         ).all()
         return chatrooms
 
@@ -60,18 +85,99 @@ class ChatroomList(Resource):
     def post(self):
         """创建聊天室"""
         data = ns.payload
+        name, is_private = data['name'], data['is_private']
+
         chatroom = db.session.scalars(
             select(Chatroom).where(
-                Chatroom.name == data['name'],
-                Chatroom.is_deleted.is_(False)
+                Chatroom.name == name, Chatroom.is_deleted.is_(False)
             )
         ).first()
         if chatroom:
             abort(400, '该名称已经被使用')
 
-        chatroom = Chatroom(name=data['name'])
+        user_id = current_user.id
+        chatroom = Chatroom(name=name, is_private=is_private, creator_id=user_id)
         db.session.add(chatroom)
+        db.session.flush()
+
+        chatroom_member = ChatroomMember(chatroom_id=chatroom.id, user_id=user_id)
+        db.session.add(chatroom_member)
+
         db.session.commit()
+
+        return chatroom
+
+
+@login_required
+@ns.route('/<int:chatroom_id>/members')
+class ChatroomMembers(Resource):
+    @ns.marshal_with(chatroom_member_model)
+    def get(self, chatroom_id):
+        """查询聊天室的成员列表"""
+        members = db.session.scalars(
+            select(User).where(
+                User.id.in_(
+                    select(ChatroomMember.user_id).where(
+                        ChatroomMember.chatroom_id == chatroom_id,
+                        ChatroomMember.is_deleted.is_(False),
+                    )
+                )
+            )
+        ).all()
+        return members
+
+
+@login_required
+@ns.route('/<int:chatroom_id>/invitation_link')
+class ChatroomInvitationLink(Resource):
+    def get(self, chatroom_id):
+        """生成聊天室的邀请链接"""
+        valid_days = int(request.args.get('valid_days'))
+        if valid_days > 365:
+            abort(400, '有效期最长为365天')
+
+        payload = {
+            'chatroom_id': chatroom_id,
+            'exp': datetime.now(UTC) + timedelta(days=valid_days),
+        }
+        key = current_app.config['SECRET_KEY']
+        join_token = jwt.encode(payload, key, algorithm='HS256')
+        print(join_token, type(join_token))
+
+        return url_for('web.index', join_token=join_token, _external=True)
+
+
+@login_required
+@ns.route('/join')
+class JoinChatroom(Resource):
+    @ns.marshal_with(chatroom_model)
+    def post(self):
+        """通过邀请链接加入聊天室"""
+        join_token = request.json.get('join_token')
+
+        try:
+            key = current_app.config['SECRET_KEY']
+            payload = jwt.decode(join_token.encode(), key, algorithms='HS256')
+        except jwt.ExpiredSignatureError:
+            abort(400, '邀请链接已过期')
+
+        chatroom_id = payload['chatroom_id']
+        chatroom = db.session.scalars(
+            select(Chatroom).where(Chatroom.id == chatroom_id)
+        ).first()
+        if not chatroom:
+            abort(400, '该聊天室不存在')
+
+        # 添加新成员
+        user_id = current_user.id
+        chatroom_member = ChatroomMember(chatroom_id=chatroom_id, user_id=user_id)
+        db.session.add(chatroom_member)
+
+        # 更新聊天室活跃时间
+        chatroom.last_active_time = datetime.now()
+
+        db.session.commit()
+
         return chatroom
 
 
@@ -108,7 +214,14 @@ class ChatroomMessageList(Resource):
         return message_list
 
     def post(self, chatroom_id):
-        """聊天室发送内容"""
+        """聊天室发送消息"""
+        chatroom = db.session.scalars(
+            select(Chatroom).where(Chatroom.id == chatroom_id)
+        ).first()
+        if not chatroom:
+            abort(400, '该聊天室不存在')
+
+        # 添加消息记录
         content = request.form.get('content')
         message = ChatroomMessage(
             content=content,
@@ -116,5 +229,11 @@ class ChatroomMessageList(Resource):
             chatroom_id=chatroom_id,
         )
         db.session.add(message)
+
+        # 更新聊天室活跃时间
+        chatroom.last_active_time = datetime.now()
+
         db.session.commit()
+
+        # 发送实时消息
         send_room_message(message)
