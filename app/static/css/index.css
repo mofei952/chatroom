@@ -47,7 +47,8 @@ textarea {
 }
 
 p {
-    line-height: 22px;
+    line-height: 16px;
+    margin: 0;
 }
 
 .fl {
@@ -218,8 +219,23 @@ body {
     height: 46px;
 }
 
+.chat-content {
+    height: 380px;
+    overflow: auto;
+    border-bottom: 1px #f1f1f1 solid
+}
+
+.chat-content img {
+    width: 50px;
+    height: 50px
+}
+
 .chatleft {
     float: left;
+}
+
+.chatright {
+    float: right;
 }
 
 .chat {
@@ -231,6 +247,7 @@ body {
 .chat .chatinfo {
     text-align: center;
     max-width: 20%;
+    font-size: 12px
 }
 
 .chat .chatinfo img {
@@ -239,32 +256,48 @@ body {
     margin: 0 10px
 }
 
+.chatleft .chatcontainer {
+    max-width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.chatright .chatcontainer {
+    float: right;
+    max-width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.chat .chattime {
+    color: #ccc;
+    font-size: 10px;
+}
+
 .chat .chatcontent {
     border: 1px #ccc solid;
     border-radius: 5px;
-    padding: 12px;
-    max-width: 80%;
+    padding: 8px 12px;
     word-break: break-all;
     word-wrap: break-word;
+    position: relative;
 }
 
-.chat .chatcontent img {
-    max-height: 80px
+.chatcontent:hover .action-buttons {
+    opacity: 1;
 }
 
-.chatright {
-    float: right;
-}
-
-.chat-content {
-    height: 380px;
-    overflow: auto;
-    border-bottom: 1px #f1f1f1 solid
-}
-
-.chat-content img {
-    width: 50px;
-    height: 50px
+.action-buttons {
+    opacity: 0;
+    transition: opacity 0.2s;
+    position: absolute;
+    right: 10px;
+    top: -10px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 #editor {
@@ -309,6 +342,11 @@ body {
     text-align: center;
     color: #999;
     padding: 10px;
+}
+
+.chatnotice .chattime {
+    color: #ccc;
+    font-size: 10px;
 }
 
 /* memeberpanel样式 */

@@ -17,7 +17,9 @@ $(function () {
         initialFrameHeight: 98,
         maximumWords: 100,
         wordOverFlowMsg: '<span style="color:red;">你输入的字符个数已经超出最大允许值！</span>',
-        autoHeightEnabled: false
+        autoHeightEnabled: false,
+        enableAutoSave: false,
+        saveInterval: 86400000
     });
     // 在ueditor编辑中输入回车进行发送
     var domUtils = UE.dom.domUtils;
@@ -27,11 +29,15 @@ $(function () {
             // 回车发送
             if (event.code == 'Enter') {
                 event.preventDefault();
+                event.stopPropagation();
                 // 空白内容不发送
                 text = ue.getContent()
                 if (!text) {
                     return
                 }
+                // 去掉结尾的换行
+                text = text.replace(/<br\/><\/p>$/i, '</p>')
+                // 调用发送接口
                 console.log('send')
                 if (current_chatroom_id) {
                     $.post('/api/v1/chatrooms/' + current_chatroom_id + '/messages', { content: text }, function (res) {
@@ -69,6 +75,7 @@ $(function () {
             if (!message.sender_id) {
                 div = '<div class="clear"></div>\n' +
                     '            <div class="chatnotice">\n' +
+                    '                <p class="chattime">' + message.created_at + '</p>\n' +
                     '                <p>---------' + message.content + '--------</p>\n' +
                     '            </div>'
             } else {
@@ -78,7 +85,13 @@ $(function () {
                     '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
                     '                        <div>' + message.sender_name + '</div>\n' +
                     '                    </div>\n' +
-                    '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
+                    '                    <div class="chatcontainer">\n' + 
+                    '                        <div class="chattime">' + message.created_at + '</div>\n' +
+                    '                        <div class="chatcontent">' + 
+                                                 message.content + 
+                    '                            <div class="action-buttons"><button class="recall-btn">撤回</button></div>\n' + 
+                    '                        </div>\n' +    
+                    '                    </div>\n' +
                     '                    <div class="clear"></div>\n' +
                     '                </div>\n' +
                     '            </div>'
@@ -105,7 +118,7 @@ $(function () {
                     '                    <span class="name">' + room.name + '</span>\n' +
                     '                    <div class="right">\n' + 
                     '                        <span class="label">' + (room.is_private ? '私密' : '') + '</span>\n' +
-                    '                        <span class="time">12:08</span>\n' +
+                    '                        <span class="time">' + room.last_active_time + '</span>\n' +
                     '                    </div>\n' +
                     '                </div>\n' +
                     '            </li>'
@@ -342,10 +355,18 @@ socket.on('json', function (message) {
     console.log('receive: ', message)
     if (current_chatroom_id && message.chatroom_id == current_chatroom_id) {
         if (!message.sender_id) {
-            div = '<div class="clear"></div>\n' +
+            if (message.created_at) {
+                div = '<div class="clear"></div>\n' +
+                '            <div class="chatnotice">\n' +
+                '                <p class="chattime">' + message.created_at + '</p>\n' +
+                '                <p>---------' + message.content + '--------</p>\n' +
+                '            </div>'
+            } else {
+                div = '<div class="clear"></div>\n' +
                 '            <div class="chatnotice">\n' +
                 '                <p>---------' + message.content + '--------</p>\n' +
                 '            </div>'
+            }
         } else {
             div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
                 '                <div class="chat">\n' +
@@ -353,7 +374,13 @@ socket.on('json', function (message) {
                 '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
                 '                        <div>' + message.sender_name + '</div>\n' +
                 '                    </div>\n' +
-                '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
+                '                    <div class="chatcontainer">\n' + 
+                '                        <div class="chattime">' + message.created_at + '</div>\n' +
+                '                        <div class="chatcontent">' + 
+                                             message.content + 
+                '                            <div class="action-buttons"><button class="recall-btn">撤回</button></div>\n' + 
+                '                        </div>\n' +
+                '                    </div>\n' +
                 '                    <div class="clear"></div>\n' +
                 '                </div>\n' +
                 '            </div>'
@@ -365,7 +392,13 @@ socket.on('json', function (message) {
             '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
             '                        <div>' + message.sender_name + '</div>\n' +
             '                    </div>\n' +
-            '                    <div class="chatcontent ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">' + message.content + '</div>\n' +
+            '                    <div class="chatcontainer">\n' + 
+            '                        <div class="chattime">' + message.created_at + '</div>\n' +
+            '                        <div class="chatcontent">' + 
+                                         message.content + 
+            '                            <div class="action-buttons"><button class="recall-btn">撤回</button></div>\n' + 
+            '                        </div>\n' +
+            '                    </div>\n' +
             '                    <div class="clear"></div>\n' +
             '                </div>\n' +
             '            </div>'

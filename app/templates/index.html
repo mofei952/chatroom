@@ -74,33 +74,45 @@
         <div class="chatpnl">
             <p class="chathead"></p>
             <div class="chat-content">
-                {# <div class="chatleft">#}
-                    {# <div class="chat">#}
-                        {# <div class="chatinfo fl">#}
-                            {# <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像"
-                                class="chaticon"><br />#}
-                            {# <div>一二三四五六七</div>#}
-                            {# </div>#}
-                        {# <div class="chatcontent fl">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</div>#}
-                        {# <div class="clear"></div>#}
-                        {# </div>#}
-                    {# </div>#}
-                {# <div class="chatright">#}
-                    {# <div class="chat">#}
-                        {# <div class="chatinfo fr">#}
-                            {# <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像"
-                                class="chaticon"><br />#}
-                            {# <div>一二三四五六七</div>#}
-                            {# </div>#}
-                        {# <div class="chatcontent fr">
-                            哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</div>#}
-                        {# <div class="clear"></div>#}
-                        {# </div>#}
-                    {# </div>#}
-                {# <div class="clear"></div>#}
-                {# <div class="chatnotice">#}
-                    {# <p>---------棋子已经进入聊天室--------</p>#}
-                    {# </div>#}
+                <!-- <div class="chatleft">
+                    <div class="chat">
+                        <div class="chatinfo fl">
+                            <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像"
+                                class="chaticon"><br />
+                            <div>一二三四五六七</div>
+                        </div>
+                        <div class="chatcontainer">
+                            <div class="chattime">2025-05-04 11:00:00</div>
+                            <div class="chatcontent">
+                                哈哈哈
+                                <div class="action-buttons">
+                                    <button class="recall-btn">撤回</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="chatright">
+                    <div class="chat">
+                        <div class="chatinfo fr">
+                            <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像"
+                                class="chaticon"><br />
+                            <div>一二三四五六七</div>
+                        </div>
+                        <div class="chatcontainer">
+                            <div class="chattime">2025-05-04 11:20:00</div>
+                            <div class="chatcontent">
+                                哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</div>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+                <div class="chatnotice">
+                    <p class="chattime">2025-05-04 11:20:00</p>
+                    <p>--------- 棋子已经进入聊天室 --------- </p>
+                </div> -->
             </div>
             <div class="chat-input">
                 <script type="text/plain" id="editor"></script>
@@ -180,7 +192,7 @@
                     </div>
                     <div class="modal-body">
                         <span>有效期：</span>
-                        <input id="valid_days" name="valid_days" type="number"/><br>
+                        <input id="valid_days" name="valid_days" type="number" /><br>
                         <span id="invitation_link"></span>
                     </div>
                     <div class="modal-footer">
@@ -191,7 +203,7 @@
             </div>
         </div>
     </div>
-    
+
 </body>
 
 </html>
