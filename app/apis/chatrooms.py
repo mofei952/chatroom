@@ -8,8 +8,29 @@ from sqlalchemy import select
 
 from app import db, socketio
 from app.models import Chatroom, ChatroomMember, ChatroomMessage, User
+from dateutil.relativedelta import relativedelta
 
 ns = Namespace('chatrooms', description='聊天室相关操作')
+
+
+class TimeAgo(fields.Raw):
+    def format(self, value):
+        now = datetime.now()
+        if now <= value:
+            return '刚刚'
+        diff = relativedelta(now, value)
+        if diff.years > 0:
+            return f'{diff.years}年前'
+        if diff.months > 0:
+            return f'{diff.months}个月前'
+        if diff.days > 0:
+            return f'{diff.days}天前'
+        if diff.hours > 0:
+            return f'{diff.hours}小时前'
+        if diff.minutes > 0:
+            return f'{diff.minutes}分钟前'
+        return f'{diff.seconds}秒前'
+
 
 chatroom_model = ns.model(
     'chatroom model',
@@ -17,6 +38,7 @@ chatroom_model = ns.model(
         'id': fields.Integer(),
         'name': fields.String(required=True),
         'is_private': fields.Boolean(required=True),
+        'last_active_time': TimeAgo(),
     },
 )
 
@@ -179,12 +201,12 @@ class JoinChatroom(Resource):
             chatroom_id=chatroom_id,
         )
         db.session.add(message)
-        
+
         # 更新聊天室活跃时间
         chatroom.last_active_time = datetime.now()
 
         db.session.commit()
-        
+
         # 发送实时消息
         send_room_message(message)
 
