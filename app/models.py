@@ -54,7 +54,8 @@ class User(BaseModel):
 
 
 class Chatroom(BaseModel):
-    """ 聊天室 """
+    """聊天室"""
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     is_private = db.Column(db.Boolean, default=False)
@@ -63,7 +64,8 @@ class Chatroom(BaseModel):
 
 
 class ChatroomMember(BaseModel):
-    """ 聊天室成员 """
+    """聊天室成员"""
+
     id = db.Column(db.Integer, primary_key=True)
     chatroom_id = db.Column(db.Integer, db.ForeignKey('chatroom.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -74,6 +76,8 @@ class ChatroomMessage(BaseModel):
     content = db.Column(db.Text, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     chatroom_id = db.Column(db.Integer, db.ForeignKey('chatroom.id'))
+    is_recalled = db.Column(db.Boolean, default=False)
+    recall_time = db.Column(db.DateTime)
 
     sender = db.relationship('User', foreign_keys=[sender_id])
     chatroom = db.relationship('Chatroom', backref='chats')
@@ -86,10 +90,18 @@ class ChatroomMessage(BaseModel):
     def sender_name(self):
         return self.sender.name
 
+
 class Friendships(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     friend_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    last_active_time = db.Column(DateTime, default=datetime.now)
+
+    friend = db.relationship('User', foreign_keys=[friend_id])
+
+    @property
+    def friend_name(self):
+        return self.friend.name
 
 
 class FriendMessage(BaseModel):
@@ -97,6 +109,8 @@ class FriendMessage(BaseModel):
     content = db.Column(db.Text, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    is_recalled = db.Column(db.Boolean, default=False)
+    recall_time = db.Column(db.DateTime)
 
     sender = db.relationship('User', foreign_keys=[sender_id])
     receiver = db.relationship('User', foreign_keys=[receiver_id])

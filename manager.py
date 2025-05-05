@@ -30,21 +30,5 @@ def deploy():
     pass
 
 
-@app.cli.command('init_db')
-def init_db():
-    from app import db, models
-
-    db.create_all()
-
-
-@app.cli.command('recreate_db')
-def recreate_db():
-    """重建数据库，会删除所有数据"""
-    from app import db, models
-
-    db.drop_all()
-    db.create_all()
-
-
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

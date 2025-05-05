@@ -3,9 +3,10 @@ from datetime import datetime
 from flask import request
 from flask_login import current_user, login_required
 from flask_restx import Namespace, Resource, abort, fields, marshal
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app import db, socketio
+from app.apis.serializer import TimeAgo
 from app.apis.socketio import user_id_and_sid_list
 from app.models import FriendMessage, Friendships, User
 
@@ -14,8 +15,9 @@ ns = Namespace('friends', description='好友相关操作')
 friend_model = ns.model(
     'friend model',
     {
-        'id': fields.Integer(),
-        'name': fields.String(),
+        'id': fields.Integer(attribute='friend_id'),
+        'name': fields.String(attribute='friend_name'),
+        'last_active_time': TimeAgo()
     },
 )
 
@@ -49,6 +51,24 @@ def send_friend_message(message):
         socketio.send(serialized_message, json=True, room=sid, namespace='/websocket')
 
 
+def send_friend_recalled_message(message):
+    """发送好友撤回消息"""
+
+    # 发送给自己
+    sids = [
+        user_id_and_sid_list[message.sender_id],
+    ]
+    # 接收人在线的话要发送
+    if message.receiver_id in user_id_and_sid_list:
+        sids.append(user_id_and_sid_list[message.receiver_id])
+
+    serialized_message = marshal(message, friend_message_model)
+    for sid in sids:
+        socketio.emit(
+            'message_recalled', serialized_message, room=sid, namespace='/websocket'
+        )
+
+
 @login_required
 @ns.route('')
 class FriendList(Resource):
@@ -56,13 +76,9 @@ class FriendList(Resource):
     def get(self):
         """获取好友列表"""
         friends = db.session.scalars(
-            select(User).where(
-                User.id.in_(
-                    select(Friendships.friend_id).where(
-                        Friendships.user_id == current_user.id,
-                        Friendships.is_deleted.is_(False),
-                    )
-                )
+            select(Friendships).where(
+                Friendships.user_id == current_user.id,
+                Friendships.is_deleted.is_(False),
             )
         ).all()
         return friends
@@ -136,7 +152,14 @@ class FriendMessageList(Resource):
         return message_list
 
     def post(self, user_id):
-        """好友发送内容"""
+        """好友发送消息"""
+        user = db.session.scalars(
+            select(User).where(User.id == user_id)
+        ).first()
+        if not user:
+            abort(400, '该用户不存在')
+
+        # 添加消息记录
         content = request.form.get('content')
         chat = FriendMessage(
             content=content,
@@ -144,5 +167,54 @@ class FriendMessageList(Resource):
             receiver_id=user_id,
         )
         db.session.add(chat)
+        
+        # 更新好友关系的活跃时间
+        db.session.execute(
+            update(Friendships).where(
+                (FriendMessage.sender_id == current_user.id)
+                & (FriendMessage.receiver_id == user_id)
+                | (FriendMessage.sender_id == user_id)
+                & (FriendMessage.receiver_id == current_user.id)
+            ).values(last_active_time=datetime.now())
+        )
+
         db.session.commit()
+
+        # 发送实时消息
         send_friend_message(chat)
+
+
+@login_required
+@ns.route('/<int:user_id>/messages/<int:message_id>')
+class FriendOneMessage(Resource):
+    def delete(self, user_id, message_id):
+        """撤回好友消息"""
+        user = db.session.scalars(
+            select(User).where(User.id == user_id)
+        ).first()
+        if not user:
+            abort(400, '该用户不存在')
+
+        message = db.session.scalars(
+            select(FriendMessage).where(FriendMessage.id == message_id)
+        ).first()
+        if not message:
+            abort(400, '该消息不存在')
+
+        # 权限检查
+        if message.sender_id != current_user.id:
+            abort(403, '只能撤回自己发送的消息')
+
+        # 发送时间检查
+        now = datetime.now()
+        if (now - message.created_at).total_seconds() > 60:
+            abort(400, '发送超过1分钟无法撤回')
+
+        # 撤回消息
+        message.is_recalled = True
+        message.recall_time = now
+
+        db.session.commit()
+
+        # 实时撤回消息
+        send_friend_recalled_message(message)

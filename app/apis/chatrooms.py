@@ -7,29 +7,10 @@ import jwt
 from sqlalchemy import select
 
 from app import db, socketio
+from app.apis.serializer import TimeAgo
 from app.models import Chatroom, ChatroomMember, ChatroomMessage, User
-from dateutil.relativedelta import relativedelta
 
 ns = Namespace('chatrooms', description='聊天室相关操作')
-
-
-class TimeAgo(fields.Raw):
-    def format(self, value):
-        now = datetime.now()
-        if now <= value:
-            return '刚刚'
-        diff = relativedelta(now, value)
-        if diff.years > 0:
-            return f'{diff.years}年前'
-        if diff.months > 0:
-            return f'{diff.months}个月前'
-        if diff.days > 0:
-            return f'{diff.days}天前'
-        if diff.hours > 0:
-            return f'{diff.hours}小时前'
-        if diff.minutes > 0:
-            return f'{diff.minutes}分钟前'
-        return f'{diff.seconds}秒前'
 
 
 chatroom_model = ns.model(
@@ -63,6 +44,7 @@ chatroom_message_model = ns.model(
         'sender_name': fields.String(),
         'chatroom_id': fields.Integer(),
         'created_at': fields.String(),
+        'is_recalled': fields.Boolean(),
     },
 )
 
@@ -76,6 +58,17 @@ def send_room_message(message):
         room='room' + str(message.chatroom_id),
         namespace='/websocket',
     )
+
+def send_room_recalled_message(message):
+    """发送聊天室已撤回的消息，进入聊天室的客户端会收到此消息"""
+    serialized_message = marshal(message, chatroom_message_model)
+    socketio.emit(
+        'message_recalled',
+        serialized_message,
+        room='room' + str(message.chatroom_id),
+        namespace='/websocket',
+    )
+
 
 
 @login_required
@@ -269,3 +262,39 @@ class ChatroomMessageList(Resource):
 
         # 发送实时消息
         send_room_message(message)
+
+
+@login_required
+@ns.route('/<int:chatroom_id>/messages/<int:message_id>')
+class ChatroomOneMessage(Resource):
+    def delete(self, chatroom_id, message_id):
+        """聊天室撤回消息"""
+        chatroom = db.session.scalars(
+            select(Chatroom).where(Chatroom.id == chatroom_id)
+        ).first()
+        if not chatroom:
+            abort(400, '该聊天室不存在')
+
+        message = db.session.scalars(
+            select(ChatroomMessage).where(ChatroomMessage.id == message_id)
+        ).first()
+        if not message:
+            abort(400, '该消息不存在')
+
+        # 权限检查
+        if message.sender_id != current_user.id:
+            abort(403, '只能撤回自己发送的消息')
+        
+        # 发送时间检查
+        now = datetime.now()
+        if (now - message.created_at).total_seconds() > 60:
+            abort(400, '发送超过1分钟无法撤回')
+
+        # 撤回消息
+        message.is_recalled = True
+        message.recall_time = now
+
+        db.session.commit()
+
+        # 实时撤回消息
+        send_room_recalled_message(message)
