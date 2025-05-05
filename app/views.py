@@ -21,14 +21,13 @@ from flask import (
     send_from_directory,
     url_for,
 )
-from flask_login import current_user, login_required, login_user
+from flask_login import login_required, login_user
 from flask_wtf import FlaskForm
-from sqlalchemy import select
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, ValidationError
-
+from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login_manager
-from app.models import Chatroom, Friendships, User
+from app.models import User
 
 bp = Blueprint('web', __name__)
 
@@ -74,8 +73,8 @@ def login():
     else:
         name = request.form.get('name')
         password = request.form.get('password')
-        user = User.query.filter_by(name=name, password=password).first()
-        if user:
+        user = User.query.filter_by(name=name).first()
+        if check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for('web.index'))
         else:
@@ -92,7 +91,8 @@ def register():
         if form.validate_on_submit():
             name = request.form.get('name')
             password = request.form.get('password')
-            user = User(name=name, password=password, nickname=name)
+            hashed_password = generate_password_hash(password)
+            user = User(name=name, password=hashed_password, nickname=name)
             db.session.add(user)
             db.session.commit()
             return redirect(url_for('web.login'))

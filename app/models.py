@@ -36,7 +36,7 @@ class BaseModel(db.Model):
 class User(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    password = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
     nickname = db.Column(db.String(50), nullable=False)
     profile_picture = db.Column(db.String(50))
 
