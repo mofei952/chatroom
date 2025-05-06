@@ -64,6 +64,47 @@ $(function () {
         }
     });
 
+    // 根据message对象生成消息div
+    function get_message_div(message) {
+        if (!message.sender_id) {
+            if (message.created_at) {
+                div = '<div class="clear"></div>\n' +
+                '            <div class="chatnotice">\n' +
+                '                <p class="chattime">' + message.created_at + '</p>\n' +
+                '                <p>' + message.content + '</p>\n' +
+                '            </div>'
+            } else {
+                div = '<div class="clear"></div>\n' +
+                '            <div class="chatnotice">\n' +
+                '                <p>' + message.content + '</p>\n' +
+                '            </div>'
+            }
+        } else if (message.is_recalled) {
+            div = '<div class="clear"></div>\n' +
+                '            <div class="chatnotice">\n' +
+                '                <p class="chattime">' + message.created_at + '</p>\n' +
+                '                <p>' + (message.sender_id == current_user_id ? '你' : message.sender_name) + '撤回了一条消息</p>\n' +
+                '            </div>'
+        } else {
+            div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
+                '                <div class="chat" data="' + message.id + '">\n' +
+                '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
+                '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
+                '                        <div>' + message.sender_name + '</div>\n' +
+                '                    </div>\n' +
+                '                    <div class="chatcontainer">\n' + 
+                '                        <div class="chattime">' + message.created_at + '</div>\n' +
+                '                        <div class="chatcontent">' + 
+                                                message.content + 
+                '                            <div class="action-buttons">' + (message.sender_id == current_user_id ? '<button class="recall-btn">撤回</button>' : "") +'</div>\n' + 
+                '                        </div>\n' +
+                '                    </div>\n' +
+                '                    <div class="clear"></div>\n' +
+                '                </div>\n' +
+                '            </div>'
+        }
+        return div
+    }
     // 在聊天窗口最前面插入消息列表
     function prepend_messages(messages) {
         // 插入消息前聊天窗口的高度和滚动条位置
@@ -72,36 +113,7 @@ $(function () {
         // 插入消息列表
         for (var i = 0; i < messages.length; i++) {
             message = messages[i]
-            if (!message.sender_id) {
-                div = '<div class="clear"></div>\n' +
-                    '            <div class="chatnotice">\n' +
-                    '                <p class="chattime">' + message.created_at + '</p>\n' +
-                    '                <p>' + message.content + '</p>\n' +
-                    '            </div>'
-            } else if (message.is_recalled) {
-                div = '<div class="clear"></div>\n' +
-                    '            <div class="chatnotice">\n' +
-                    '                <p class="chattime">' + message.created_at + '</p>\n' +
-                    '                <p>' + (message.sender_id == current_user_id ? '你' : message.sender_name) + '撤回了一条消息</p>\n' +
-                    '            </div>'
-            } else {
-                div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
-                    '                <div class="chat" data="' + message.id + '">\n' +
-                    '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
-                    '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-                    '                        <div>' + message.sender_name + '</div>\n' +
-                    '                    </div>\n' +
-                    '                    <div class="chatcontainer">\n' + 
-                    '                        <div class="chattime">' + message.created_at + '</div>\n' +
-                    '                        <div class="chatcontent">' + 
-                                                 message.content + 
-                    '                            <div class="action-buttons"><button class="recall-btn">撤回</button></div>\n' + 
-                    '                        </div>\n' +    
-                    '                    </div>\n' +
-                    '                    <div class="clear"></div>\n' +
-                    '                </div>\n' +
-                    '            </div>'
-            }
+            div = get_message_div(message)
             $('.chat-content').prepend(div)
         }
         // 插入消息后聊天窗口的高度
@@ -332,7 +344,7 @@ $(function () {
         $('#add_member_confirm_btn').text('生成')
         $('#add_member_modal').modal()
     })
-    // 创建聊天室窗口的创建按钮事件
+    // 创建邀请链接窗口的创建按钮事件
     $('#add_member_confirm_btn').click(function () {
         if($('#add_member_confirm_btn').text() == '生成') {
             valid_days = $('#valid_days').val()
@@ -369,84 +381,36 @@ $(function () {
             location.href = location.pathname;
         });
     }
+    
+    // websocket连接和事件监听
+    var socket = io('http://' + location.hostname + ':' + location.port + '/websocket');
+    socket.on('connect', function () { // 发送到服务器的通信内容
+        // socket.emit('join_chatroom', {name:'11',room: '1'});
+    });
+    socket.on('json', function (message) {
+        //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
+        console.log('receive: ', message)
+        if (current_chatroom_id && message.chatroom_id == current_chatroom_id) {
+            div = get_message_div(message)
+            $('.chat-content').append(div)
+            $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
+        } else if (current_friend_id && (message.sender_id == current_friend_id || message.receiver_id == current_friend_id)) {
+            div = get_message_div(message)
+            $('.chat-content').append(div)
+            $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
+        }
+    });
+    socket.on('message_recalled', function (message) {
+        console.log('receive recalled message: ', message)
+        if (current_chatroom_id && message.chatroom_id == current_chatroom_id 
+            ||  (current_friend_id && (message.sender_id == current_friend_id || message.receiver_id == current_friend_id))
+        ) {
+            chatright = $('.chat[data='+message.id+']').parent()
+            div = get_message_div(message)
+            chatright.after(div)
+            chatright.remove()
+        }
+    })
 })
 
-var socket = io('http://' + location.hostname + ':' + location.port + '/websocket');
-socket.on('connect', function () { // 发送到服务器的通信内容
-    // socket.emit('join_chatroom', {name:'11',room: '1'});
-});
-socket.on('json', function (message) {
-    //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
-    console.log('receive: ', message)
-    if (current_chatroom_id && message.chatroom_id == current_chatroom_id) {
-        if (!message.sender_id) {
-            if (message.created_at) {
-                div = '<div class="clear"></div>\n' +
-                '            <div class="chatnotice">\n' +
-                '                <p class="chattime">' + message.created_at + '</p>\n' +
-                '                <p>' + message.content + '</p>\n' +
-                '            </div>'
-            } else {
-                div = '<div class="clear"></div>\n' +
-                '            <div class="chatnotice">\n' +
-                '                <p>' + message.content + '</p>\n' +
-                '            </div>'
-            }
-        } else {
-            div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
-                '                <div class="chat" data="' + message.id + '">\n' +
-                '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
-                '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-                '                        <div>' + message.sender_name + '</div>\n' +
-                '                    </div>\n' +
-                '                    <div class="chatcontainer">\n' + 
-                '                        <div class="chattime">' + message.created_at + '</div>\n' +
-                '                        <div class="chatcontent">' + 
-                                             message.content + 
-                '                            <div class="action-buttons"><button class="recall-btn">撤回</button></div>\n' + 
-                '                        </div>\n' +
-                '                    </div>\n' +
-                '                    <div class="clear"></div>\n' +
-                '                </div>\n' +
-                '            </div>'
-        }
-        $('.chat-content').append(div)
-        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-    } else if (current_friend_id && (message.sender_id == current_friend_id || message.receiver_id == current_friend_id)) {
-        div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
-            '                <div class="chat" data="' + message.id + '">\n' +
-            '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
-            '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-            '                        <div>' + message.sender_name + '</div>\n' +
-            '                    </div>\n' +
-            '                    <div class="chatcontainer">\n' + 
-            '                        <div class="chattime">' + message.created_at + '</div>\n' +
-            '                        <div class="chatcontent">' + 
-                                         message.content + 
-            '                            <div class="action-buttons"><button class="recall-btn">撤回</button></div>\n' + 
-            '                        </div>\n' +
-            '                    </div>\n' +
-            '                    <div class="clear"></div>\n' +
-            '                </div>\n' +
-            '            </div>'
-        $('.chat-content').append(div)
-        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-    }
-});
-socket.on('message_recalled', function (message) {
-    console.log('receive recalled message: ', message)
-    if (current_chatroom_id && message.chatroom_id == current_chatroom_id 
-        ||  (current_friend_id && (message.sender_id == current_friend_id || message.receiver_id == current_friend_id))
-    ) {
-        chatright = $('.chat[data='+message.id+']').parent()
-        chatright.after('<div class="clear"></div>'+
-                        '<div class="chatnotice">'+
-                            '<p class="chattime">' + message.created_at + '</p>\n' +
-                            '<p>' + 
-                                (message.sender_id == current_user_id ? '你' : message.sender_name) + '撤回了一条消息' +
-                            '</p>' + 
-                        '</div>'
-        )
-        chatright.remove()
-    }
-})
+
