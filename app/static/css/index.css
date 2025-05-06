@@ -293,11 +293,22 @@ body {
     opacity: 0;
     transition: opacity 0.2s;
     position: absolute;
-    right: 10px;
-    top: -10px;
+    right: 0px;
+    bottom: -10px;
     background: white;
     border-radius: 15px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 13px
+}
+
+.action-buttons button {
+    padding: 2px 4px;
+    white-space: nowrap;
+    color: #fff;
+    background-color: #228f26;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 1px #999;
 }
 
 #editor {
