@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import request
 from flask_login import current_user, login_required
 from flask_restx import Namespace, Resource, abort, fields, marshal
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 
 from app import db, socketio
 from app.apis.serializer import TimeAgo
@@ -12,12 +12,13 @@ from app.models import FriendMessage, Friendships, User
 
 ns = Namespace('friends', description='好友相关操作')
 
-friend_model = ns.model(
+friendship_model = ns.model(
     'friend model',
     {
         'id': fields.Integer(attribute='friend_id'),
         'name': fields.String(attribute='friend_name'),
-        'last_active_time': TimeAgo()
+        'last_active_time': TimeAgo(),
+        'unread_count': fields.Integer(),
     },
 )
 
@@ -69,10 +70,25 @@ def send_friend_recalled_message(message):
         )
 
 
+def send_friend_unread_update_event(frinedship):
+    """发送好友未读更新事件"""
+
+    # 不在线的话不发送
+    if frinedship.user_id not in user_id_and_sid_list:
+        return
+    
+    # 发送
+    sid = user_id_and_sid_list[frinedship.user_id]
+    serialized_friendship = marshal(frinedship, friendship_model)
+    socketio.emit(
+        'unread_update', serialized_friendship, room=sid, namespace='/websocket'
+    )
+
+
 @login_required
 @ns.route('')
 class FriendList(Resource):
-    @ns.marshal_with(friend_model)
+    @ns.marshal_with(friendship_model)
     def get(self):
         """获取好友列表"""
         friends = db.session.scalars(
@@ -83,8 +99,8 @@ class FriendList(Resource):
         ).all()
         return friends
 
-    @ns.expect(friend_model)
-    @ns.marshal_with(friend_model)
+    @ns.expect(friendship_model)
+    @ns.marshal_with(friendship_model)
     def post(self):
         """添加好友"""
         data = ns.payload
@@ -153,35 +169,110 @@ class FriendMessageList(Resource):
 
     def post(self, user_id):
         """好友发送消息"""
-        user = db.session.scalars(
-            select(User).where(User.id == user_id)
-        ).first()
+        user = db.session.scalars(select(User).where(User.id == user_id)).first()
         if not user:
             abort(400, '该用户不存在')
 
         # 添加消息记录
         content = request.form.get('content')
-        chat = FriendMessage(
+        message = FriendMessage(
             content=content,
             sender_id=current_user.id,
             receiver_id=user_id,
         )
-        db.session.add(chat)
-        
-        # 更新好友关系的活跃时间
+        db.session.add(message)
+        db.session.flush()
+
+        # 更新好友关系的最近活跃时间和最近一条消息ID
         db.session.execute(
-            update(Friendships).where(
+            update(Friendships)
+            .where(
                 (FriendMessage.sender_id == current_user.id)
                 & (FriendMessage.receiver_id == user_id)
                 | (FriendMessage.sender_id == user_id)
                 & (FriendMessage.receiver_id == current_user.id)
-            ).values(last_active_time=datetime.now())
+            )
+            .values(last_active_time=datetime.now(), last_message_id=message.id)
+        )
+
+        # 更新发送者的最近已读消息ID和未读数量
+        db.session.execute(
+            update(Friendships)
+            .where(
+                (Friendships.user_id == current_user.id)
+                & (Friendships.friend_id == user_id)
+            )
+            .values(last_read_message_id=message.id, unread_count=0)
+        )
+
+        # 更接收者的未读消息数量
+        last_read_message_id = db.session.scalar(
+            select(Friendships.last_read_message_id).where(
+                (Friendships.user_id == user_id)
+                & (Friendships.friend_id == current_user.id)
+            )
+        )
+        unread_count = db.session.scalar(
+            select(func.count(FriendMessage.id)).where(
+                (
+                    (FriendMessage.sender_id == current_user.id)
+                    & (FriendMessage.receiver_id == user_id)
+                    | (FriendMessage.sender_id == user_id)
+                    & (FriendMessage.receiver_id == current_user.id)
+                )
+                & (FriendMessage.id > (last_read_message_id or 0))
+                & (FriendMessage.id <= message.id)
+            )
+        )
+        db.session.execute(
+            update(Friendships)
+            .where(
+                (Friendships.user_id == user_id)
+                & (Friendships.friend_id == current_user.id)
+            )
+            .values(unread_count=unread_count)
         )
 
         db.session.commit()
 
         # 发送实时消息
-        send_friend_message(chat)
+        send_friend_message(message)
+
+        # 实时给好友发送未读更新事件（包括最近活跃时间、未读数量）
+        frinedship = db.session.scalars(
+            select(Friendships).where(
+                (Friendships.user_id == user_id)
+                & (Friendships.friend_id == current_user.id)
+            )
+        ).first()
+        send_friend_unread_update_event(frinedship)
+
+
+@login_required
+@ns.route('/<int:user_id>/read_markers')
+class FriendReadMarkers(Resource):
+    def post(self, user_id):
+        """将好友消息都标记为已读"""
+
+        # 获取最近一条消息ID
+        last_message_id = db.session.scalar(
+            select(Friendships.last_message_id).where(
+                (Friendships.user_id == current_user.id)
+                & (Friendships.friend_id == user_id)
+            )
+        )
+
+        # 更新我的最近已读消息ID和未读数量
+        db.session.execute(
+            update(Friendships)
+            .where(
+                (Friendships.user_id == current_user.id)
+                & (Friendships.friend_id == user_id)
+            )
+            .values(last_read_message_id=last_message_id, unread_count=0)
+        )
+
+        db.session.commit()
 
 
 @login_required
@@ -189,9 +280,7 @@ class FriendMessageList(Resource):
 class FriendOneMessage(Resource):
     def delete(self, user_id, message_id):
         """撤回好友消息"""
-        user = db.session.scalars(
-            select(User).where(User.id == user_id)
-        ).first()
+        user = db.session.scalars(select(User).where(User.id == user_id)).first()
         if not user:
             abort(400, '该用户不存在')
 

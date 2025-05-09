@@ -166,6 +166,7 @@ body {
 }
 
 .qun {
+    position: relative;
     padding: 5px 10px;
 }
 
@@ -192,6 +193,22 @@ body {
     max-width: 150px;
     /* 确保宽度生效 */
     display: inline-block;
+}
+
+.qun .unread_mark {
+    position: absolute;
+    left: 39px;
+    top: 0px;
+    background-color: red;
+    color: white;
+    border-radius: 7px;
+    min-width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    padding: 0 4px
 }
 
 .qun .right {

@@ -21,11 +21,34 @@ $(function () {
         enableAutoSave: false,
         saveInterval: 86400000
     });
+    // 清空当前聊天窗口的未读标记
+    function clear_current_chat_unread_mark() {
+        if ($('#friend_list').is(':visible') && current_friend_id) {
+            li = $('#friend_list').find('li[data='+ current_friend_id +']')
+            unread_mark_div = li.find('.unread_mark')
+            if (unread_mark_div.is(':visible')) {
+                friend_name = li.find('.name').text()
+                $.post({
+                    url: '/api/v1/friends/' + current_friend_id + '/read_markers',
+                    contentType: 'application/json',
+                }).done(function () {
+                    console.log('将好友【' + friend_name + '】的消息标记为已读')
+                    unread_mark_div.hide()
+                });
+            }
+        }
+    }
     // 在ueditor编辑中输入回车进行发送
     var domUtils = UE.dom.domUtils;
     ue.addListener('ready', function () {
         ue.focus(true);
+        domUtils.on(ue.body, "click", function (event) {
+            // 点击任意区域 清空当前聊天窗口的未读标记
+            clear_current_chat_unread_mark()
+        })
         domUtils.on(ue.body, "keydown", function (event) {
+            // 按下任意键 清空当前聊天窗口的未读标记
+            clear_current_chat_unread_mark()
             // 回车发送
             if (event.code == 'Enter') {
                 event.preventDefault();
@@ -52,6 +75,10 @@ $(function () {
                 }
             }
         })
+    });
+    // 点击任意区域 清空当前聊天窗口的未读标记
+    $(document).on('click', function() {
+        clear_current_chat_unread_mark()
     });
 
     // 请求失败时的处理
@@ -226,6 +253,7 @@ $(function () {
                 li = '<li data="' + friend.id + '">\n' +
                     '                <div class="qun">\n' +
                     '                    <img src="/static/image/user.png" alt="用户头像" class="qunicon">\n' +
+                    '                    <div class="unread_mark" ' + (friend.unread_count ? '' : 'style="display: none;"') + '>' + friend.unread_count +'</div>\n' + 
                     '                    <span class="name">' + friend.name + '</span>\n' +
                     '                    <div class="right">\n' + 
                     '                        <span class="time">' + (friend.last_active_time || '') + '</span>\n' +
@@ -254,10 +282,11 @@ $(function () {
             $('#friend_btn').click()
         });
     })
-    // 点击好友列表的li进入对应的聊天室
+    // 点击好友列表的li进入对应的聊天窗口
     $('#friend_list').on('click', 'li', function () {
         friend_name = $(this).find('span').eq(0).text()
         friend_id = $(this).closest('li').attr('data')
+        unread_mark_div = $(this).find('.unread_mark')
         $.getJSON('/api/v1/friends/' + friend_id + '/messages', function (messages) {
             // 如果已经在聊天室，先发出离开聊天室信号
             if (current_chatroom_id) {
@@ -281,6 +310,8 @@ $(function () {
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             // 显示editor
             $('#editor').show()
+            // 清空当前聊天窗口的未读标记
+            clear_current_chat_unread_mark()
         })
     })
 
@@ -364,11 +395,15 @@ $(function () {
         }
     })
 
-    // 初始化时模拟点击聊天室按钮
-    $('#chatroom_btn').click()
+    // 初始化时模拟点击聊天室按钮或联系人按钮
+    url_params = new URLSearchParams(window.location.search);
+    if (url_params.get('tab') == 'friend') {
+        $('#friend_btn').click()
+    } else {
+        $('#chatroom_btn').click()
+    }
 
     // 如果有join_token参数，请求join接口加入聊天室
-    url_params = new URLSearchParams(window.location.search);
     if (url_params.has('join_token')) {
         join_token = url_params.get('join_token')
         console.log(join_token)
@@ -398,7 +433,7 @@ $(function () {
             div = get_message_div(message)
             $('.chat-content').append(div)
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
-        }
+        } 
     });
     socket.on('message_recalled', function (message) {
         console.log('receive recalled message: ', message)
@@ -409,6 +444,16 @@ $(function () {
             div = get_message_div(message)
             chatright.after(div)
             chatright.remove()
+        }
+    })
+    socket.on('unread_update', function (frinedship) {
+        console.log('receive unread update: ', frinedship)
+        // 如果在好友聊天页面，则更新好友列表的最近消息时间和未读数量
+        if ($('#friend_list').is(':visible')) {
+            li = $('#friend_list').find('li[data='+ frinedship.id +']')
+            li.find('.time').text(frinedship.last_active_time)
+            li.find('.unread_mark').text(frinedship.unread_count)
+            li.find('.unread_mark').show()
         }
     })
 })

@@ -60,15 +60,36 @@
                 {% endfor %}
             </ul>
             <ul id="friend_list" class="chatlist" style="display: {{ 'block' if tab == 'friend' else 'none' }};">
-                {% for friend in friends %}
-                <li data="{{ friend.id }}">
+                <!-- <li data="1">
                     <div class="qun">
                         <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
-                        <span class="name">{{ friend.name }}</span>
-                        <span class="time">12:08</span>
+                        <div class="unread_mark">99+</div>
+                        <span class="name">好友测试</span>
+                        <div class="right">
+                            <span class="time">12:08</span>
+                        </div>
                     </div>
                 </li>
-                {% endfor %}
+                <li data="2">
+                    <div class="qun">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                        <div class="unread_mark">9</div>
+                        <span class="name">好友测试</span>
+                        <div class="right">
+                            <span class="time">12:08</span>
+                        </div>
+                    </div>
+                </li>
+                <li data="3">
+                    <div class="qun">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                        <div class="unread_mark">23</div>
+                        <span class="name">好友测试</span>
+                        <div class="right">
+                            <span class="time">12:08</span>
+                        </div>
+                    </div>
+                </li> -->
             </ul>
         </div>
         <div class="chatpnl">

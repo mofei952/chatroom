@@ -96,6 +96,9 @@ class Friendships(BaseModel):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     friend_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     last_active_time = db.Column(DateTime, default=datetime.now)
+    last_message_id = db.Column(db.Integer, db.ForeignKey('friend_message.id'))
+    last_read_message_id = db.Column(db.Integer, db.ForeignKey('friend_message.id'))
+    unread_count = db.Column(db.Integer)
 
     friend = db.relationship('User', foreign_keys=[friend_id])
 

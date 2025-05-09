@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from flask_restx import fields
 
@@ -7,7 +7,7 @@ from flask_restx import fields
 class TimeAgo(fields.Raw):
     def format(self, value):
         now = datetime.now()
-        if now <= value:
+        if now - value <= timedelta(seconds=3):
             return '刚刚'
         diff = relativedelta(now, value)
         if diff.years > 0:
