@@ -229,8 +229,8 @@ $(function () {
                         member = members[i]
                         li = '<li data="' + member.id + '">\n' +
                                 '<div class="member">\n' +
-                                    '<img src="/static/image/user.png" alt="用户头像" class="avatar">\n' +
-                                    '<span class="name">' + member.nickname + '</span>\n' +
+                                    '<img src="/static/image/user.png" alt="用户头像" class="avatar ' + (member.is_online ? '' : 'offline_avatar') + '">\n' +
+                                    '<span class="name ' + (member.is_online ? '' : 'offline_username') + '">' + member.name + '</span>\n' +
                                 '</div>\n' +
                             '</li>'
                         $('#member_list').append(li)
@@ -461,8 +461,18 @@ $(function () {
         // 如果在好友聊天页面，则更新好友的在线状态
         if ($('#friend_list').is(':visible')) {
             li = $('#friend_list').find('li[data='+ data.user_id +']')
+            if (li) {
+                li.find('.avatar').removeClass('offline_avatar')
+                li.find('.name').removeClass('offline_username')
+            }
+        }
+        // 如果成员列表可见，则更新成员的在线状态
+        if ($('#member_list').is(':visible')) {
+            li = $('#member_list').find('li[data='+ data.user_id +']')
+            if (li) {
             li.find('.avatar').removeClass('offline_avatar')
             li.find('.name').removeClass('offline_username')
+            }
         }
     })
     socket.on('user_offline', function (data) {
@@ -473,8 +483,22 @@ $(function () {
             for (var i = 0; i < user_ids.length; i++) {
                 user_id = user_ids[i]
                 li = $('#friend_list').find('li[data='+ user_id +']')
+                if (li) {
+                    li.find('.avatar').addClass('offline_avatar')
+                    li.find('.name').addClass('offline_username')
+                }
+            }                
+        }
+        // 如果成员列表可见，则更新成员的在线状态
+        if ($('#member_list').is(':visible')) {
+            user_ids = data['user_ids']
+            for (var i = 0; i < user_ids.length; i++) {
+                user_id = user_ids[i]
+                li = $('#member_list').find('li[data='+ user_id +']')
+                if (li) {
                 li.find('.avatar').addClass('offline_avatar')
                 li.find('.name').addClass('offline_username')
+                }
             }                
         }
     })

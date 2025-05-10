@@ -435,6 +435,15 @@ body {
     display: inline-block;
 }
 
+.member .offline_avatar {
+    opacity: 0.3;
+    filter: grayscale(30%);
+}
+
+.member .offline_username {
+    color: #b3b3b3;
+}
+
 #invitation_link {
     color: #999;
     word-break: break-all;
