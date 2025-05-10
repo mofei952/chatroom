@@ -310,6 +310,8 @@ $(function () {
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             // 显示editor
             $('#editor').show()
+            // 隐藏成员列表div
+            $('.memberpnl').hide()
             // 清空当前聊天窗口的未读标记
             clear_current_chat_unread_mark()
         })
@@ -470,8 +472,8 @@ $(function () {
         if ($('#member_list').is(':visible')) {
             li = $('#member_list').find('li[data='+ data.user_id +']')
             if (li) {
-            li.find('.avatar').removeClass('offline_avatar')
-            li.find('.name').removeClass('offline_username')
+                li.find('.avatar').removeClass('offline_avatar')
+                li.find('.name').removeClass('offline_username')
             }
         }
     })
@@ -496,8 +498,8 @@ $(function () {
                 user_id = user_ids[i]
                 li = $('#member_list').find('li[data='+ user_id +']')
                 if (li) {
-                li.find('.avatar').addClass('offline_avatar')
-                li.find('.name').addClass('offline_username')
+                    li.find('.avatar').addClass('offline_avatar')
+                    li.find('.name').addClass('offline_username')
                 }
             }                
         }
