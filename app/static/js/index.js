@@ -158,8 +158,8 @@ $(function () {
             for (var i = 0; i < rooms.length; i++) {
                 room = rooms[i]
                 li = '<li data="' + room.id + '">\n' +
-                    '                <div class="qun">\n' +
-                    '                    <img src="/static/image/user.png" alt="聊天室" class="qunicon">\n' +
+                    '                <div class="room">\n' +
+                    '                    <img src="/static/image/user.png" alt="聊天室" class="avatar">\n' +
                     '                    <span class="name">' + room.name + '</span>\n' +
                     '                    <div class="right">\n' + 
                     '                        <span class="label">' + (room.is_private ? '私密' : '') + '</span>\n' +
@@ -229,7 +229,7 @@ $(function () {
                         member = members[i]
                         li = '<li data="' + member.id + '">\n' +
                                 '<div class="member">\n' +
-                                    '<img src="/static/image/user.png" alt="用户头像" class="qunicon">\n' +
+                                    '<img src="/static/image/user.png" alt="用户头像" class="avatar">\n' +
                                     '<span class="name">' + member.nickname + '</span>\n' +
                                 '</div>\n' +
                             '</li>'
@@ -251,10 +251,10 @@ $(function () {
             for (var i = 0; i < friends.length; i++) {
                 friend = friends[i]
                 li = '<li data="' + friend.id + '">\n' +
-                    '                <div class="qun">\n' +
-                    '                    <img src="/static/image/user.png" alt="用户头像" class="qunicon">\n' +
+                    '                <div class="room">\n' +
+                    '                    <img src="/static/image/user.png" alt="用户头像" class="avatar ' + (friend.is_online ? '' : 'offline_avatar') + '">\n' +
                     '                    <div class="unread_mark" ' + (friend.unread_count ? '' : 'style="display: none;"') + '>' + friend.unread_count +'</div>\n' + 
-                    '                    <span class="name">' + friend.name + '</span>\n' +
+                    '                    <span class="name ' + (friend.is_online ? '' : 'offline_username') + '">' + friend.name + '</span>\n' +
                     '                    <div class="right">\n' + 
                     '                        <span class="time">' + (friend.last_active_time || '') + '</span>\n' +
                     '                    </div>\n' +
@@ -420,7 +420,7 @@ $(function () {
     // websocket连接和事件监听
     var socket = io('http://' + location.hostname + ':' + location.port + '/websocket');
     socket.on('connect', function () { // 发送到服务器的通信内容
-        // socket.emit('join_chatroom', {name:'11',room: '1'});
+        setInterval(send_heartbeat, 30000);
     });
     socket.on('json', function (message) {
         //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
@@ -456,6 +456,45 @@ $(function () {
             li.find('.unread_mark').show()
         }
     })
+    socket.on('user_online', function (data) {
+        console.log('receive user online: ', data)
+        // 如果在好友聊天页面，则更新好友的在线状态
+        if ($('#friend_list').is(':visible')) {
+            li = $('#friend_list').find('li[data='+ data.user_id +']')
+            li.find('.avatar').removeClass('offline_avatar')
+            li.find('.name').removeClass('offline_username')
+        }
+    })
+    socket.on('user_offline', function (data) {
+        console.log('receive user offline: ', data)
+        // 如果在好友聊天页面，则更新好友的在线状态
+        if ($('#friend_list').is(':visible')) {
+            user_ids = data['user_ids']
+            for (var i = 0; i < user_ids.length; i++) {
+                user_id = user_ids[i]
+                li = $('#friend_list').find('li[data='+ user_id +']')
+                li.find('.avatar').addClass('offline_avatar')
+                li.find('.name').addClass('offline_username')
+            }                
+        }
+    })
+    // 发送心跳
+    function send_heartbeat() {
+        if (socket.connected) {
+            console.log('send heartbeat')
+            socket.emit('heartbeat');
+        }
+    }
+    // 标签页关闭时断开连接
+    window.addEventListener('beforeunload', () => {
+        if (socket.connected) {
+          // 设置超时强制断开
+          setTimeout(() => {
+            if (socket.connected) socket.close();
+          }, 100);
+          socket.disconnect();
+        }
+      });
 })
 
 

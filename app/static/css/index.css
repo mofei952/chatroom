@@ -165,21 +165,30 @@ body {
     cursor: pointer
 }
 
-.qun {
+.room {
     position: relative;
     padding: 5px 10px;
 }
 
-.qun:hover {
+.room:hover {
     background-color: #ccc;
 }
 
-.qun img {
+.room .avatar {
     width: 36px;
     height: auto;
 }
 
-.qun .name {
+.room .offline_avatar {
+    opacity: 0.3;
+    filter: grayscale(30%);
+}
+
+.room .offline_username {
+    color: #b3b3b3;
+}
+
+.room .name {
     font-size: 14px;
     margin-left: 5px;
     vertical-align: middle;
@@ -195,7 +204,7 @@ body {
     display: inline-block;
 }
 
-.qun .unread_mark {
+.room .unread_mark {
     position: absolute;
     left: 39px;
     top: 0px;
@@ -211,7 +220,7 @@ body {
     padding: 0 4px
 }
 
-.qun .right {
+.room .right {
     height: 36px;
     float: right;
     display: flex;
@@ -221,7 +230,7 @@ body {
     color: #ddd;
 }
 
-.qun .label {
+.room .label {
     font-size: 9px;
     color: chocolate;
     padding: 0;

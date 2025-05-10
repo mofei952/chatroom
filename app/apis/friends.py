@@ -5,9 +5,8 @@ from flask_login import current_user, login_required
 from flask_restx import Namespace, Resource, abort, fields, marshal
 from sqlalchemy import func, select, update
 
-from app import db, socketio
+from app import db, socketio, redis_client
 from app.apis.serializer import TimeAgo
-from app.apis.socketio import user_id_and_sid_list
 from app.models import FriendMessage, Friendships, User
 
 ns = Namespace('friends', description='好友相关操作')
@@ -19,6 +18,7 @@ friendship_model = ns.model(
         'name': fields.String(attribute='friend_name'),
         'last_active_time': TimeAgo(),
         'unread_count': fields.Integer(),
+        'is_online': fields.Boolean(attribute='friend.is_online'),
     },
 )
 
@@ -41,11 +41,12 @@ def send_friend_message(message):
 
     # 发送给自己
     sids = [
-        user_id_and_sid_list[message.sender_id],
+        redis_client.hget('online_users', message.sender_id),
     ]
     # 接收人在线的话要发送
-    if message.receiver_id in user_id_and_sid_list:
-        sids.append(user_id_and_sid_list[message.receiver_id])
+    sid = redis_client.hget('online_users', message.receiver_id)
+    if sid:
+        sids.append(sid)
 
     serialized_message = marshal(message, friend_message_model)
     for sid in sids:
@@ -57,11 +58,12 @@ def send_friend_recalled_message(message):
 
     # 发送给自己
     sids = [
-        user_id_and_sid_list[message.sender_id],
+        redis_client.hget('online_users', message.sender_id),
     ]
     # 接收人在线的话要发送
-    if message.receiver_id in user_id_and_sid_list:
-        sids.append(user_id_and_sid_list[message.receiver_id])
+    sid = redis_client.hget('online_users', message.receiver_id)
+    if sid is not None:
+        sids.append(sid)
 
     serialized_message = marshal(message, friend_message_model)
     for sid in sids:
@@ -74,11 +76,11 @@ def send_friend_unread_update_event(frinedship):
     """发送好友未读更新事件"""
 
     # 不在线的话不发送
-    if frinedship.user_id not in user_id_and_sid_list:
+    sid = redis_client.hget('online_users', frinedship.user_id)
+    if sid is None:
         return
     
     # 发送
-    sid = user_id_and_sid_list[frinedship.user_id]
     serialized_friendship = marshal(frinedship, friendship_model)
     socketio.emit(
         'unread_update', serialized_friendship, room=sid, namespace='/websocket'

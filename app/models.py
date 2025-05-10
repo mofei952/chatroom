@@ -11,7 +11,7 @@ from datetime import datetime
 
 from sqlalchemy import DateTime, Integer
 
-from app import db
+from app import db, redis_client
 
 
 class BaseModel(db.Model):
@@ -51,6 +51,10 @@ class User(BaseModel):
 
     def get_id(self):
         return self.id
+    
+    @property
+    def is_online(self):
+        return redis_client.hget('online_users', self.id) is not None
 
 
 class Chatroom(BaseModel):

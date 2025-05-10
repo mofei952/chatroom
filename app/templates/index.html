@@ -40,8 +40,8 @@
             <div class="clear"></div>
             <ul id="room_list" class="chatlist" style="display: {{ 'block' if tab == 'chatroom' else 'none' }};">
                 <!-- <li data="1">
-                    <div class="qun">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                    <div class="room">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar">
                         <span class="name">顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶</span>
                         <div class="right">
                             <span class="label">私密</span>
@@ -49,20 +49,11 @@
                         </div>
                     </div>
                 </li> -->
-                {% for room in chatrooms %}
-                <li data="{{ room.id }}">
-                    <div class="qun">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
-                        <span class="name">{{ room.name }}</span>
-                        <span class="time">12:08</span>
-                    </div>
-                </li>
-                {% endfor %}
             </ul>
             <ul id="friend_list" class="chatlist" style="display: {{ 'block' if tab == 'friend' else 'none' }};">
                 <!-- <li data="1">
-                    <div class="qun">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                    <div class="room">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar">
                         <div class="unread_mark">99+</div>
                         <span class="name">好友测试</span>
                         <div class="right">
@@ -71,8 +62,8 @@
                     </div>
                 </li>
                 <li data="2">
-                    <div class="qun">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                    <div class="room">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar">
                         <div class="unread_mark">9</div>
                         <span class="name">好友测试</span>
                         <div class="right">
@@ -81,10 +72,10 @@
                     </div>
                 </li>
                 <li data="3">
-                    <div class="qun">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="qunicon">
+                    <div class="room">
+                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar offline_avatar">
                         <div class="unread_mark">23</div>
-                        <span class="name">好友测试</span>
+                        <span class="name offline_username">好友测试</span>
                         <div class="right">
                             <span class="time">12:08</span>
                         </div>
