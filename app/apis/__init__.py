@@ -3,6 +3,7 @@ from flask_restx import Api
 
 from app.apis.chatrooms import ns as chatrooms_ns
 from app.apis.friends import ns as friends_ns
+from app.apis.users import ns as users_ns
 
 bp = Blueprint('api', __name__)
 api = Api(
@@ -15,3 +16,4 @@ api = Api(
 
 api.add_namespace(chatrooms_ns)
 api.add_namespace(friends_ns)
+api.add_namespace(users_ns)

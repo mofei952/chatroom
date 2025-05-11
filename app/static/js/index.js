@@ -1,87 +1,5 @@
 $(function () {
-    // 当前用户信息
-    current_user_id = $('.user').attr('data')
-    current_user_name = $('.user span').text()
-    // 当前聊天对象信息
-    current_chatroom_id = null
-    current_friend_id = null
-
-    // 初始化ueditor
-    var ue = UE.getEditor('editor', {
-        //这里可以选择自己需要的工具按钮名称,此处仅选择如下七个
-        toolbars: [
-            ['simpleupload', /*'insertimage',*/ 'emotion', 'scrawl']
-        ],
-        elementPathEnabled: false,
-        initialFrameWidth: '100%',
-        initialFrameHeight: 98,
-        maximumWords: 100,
-        wordOverFlowMsg: '<span style="color:red;">你输入的字符个数已经超出最大允许值！</span>',
-        autoHeightEnabled: false,
-        enableAutoSave: false,
-        saveInterval: 86400000
-    });
-    // 清空当前聊天窗口的未读标记
-    function clear_current_chat_unread_mark() {
-        if ($('#friend_list').is(':visible') && current_friend_id) {
-            li = $('#friend_list').find('li[data='+ current_friend_id +']')
-            unread_mark_div = li.find('.unread_mark')
-            if (unread_mark_div.is(':visible')) {
-                friend_name = li.find('.name').text()
-                $.post({
-                    url: '/api/v1/friends/' + current_friend_id + '/read_markers',
-                    contentType: 'application/json',
-                }).done(function () {
-                    console.log('将好友【' + friend_name + '】的消息标记为已读')
-                    unread_mark_div.hide()
-                });
-            }
-        }
-    }
-    // 在ueditor编辑中输入回车进行发送
-    var domUtils = UE.dom.domUtils;
-    ue.addListener('ready', function () {
-        ue.focus(true);
-        domUtils.on(ue.body, "click", function (event) {
-            // 点击任意区域 清空当前聊天窗口的未读标记
-            clear_current_chat_unread_mark()
-        })
-        domUtils.on(ue.body, "keydown", function (event) {
-            // 按下任意键 清空当前聊天窗口的未读标记
-            clear_current_chat_unread_mark()
-            // 回车发送
-            if (event.code == 'Enter') {
-                event.preventDefault();
-                event.stopPropagation();
-                // 空白内容不发送
-                text = ue.getContent()
-                if (!text) {
-                    return
-                }
-                // 去掉结尾的换行
-                text = text.replace(/<br\/><\/p>$/i, '</p>')
-                // 调用发送接口
-                console.log('send')
-                if (current_chatroom_id) {
-                    $.post('/api/v1/chatrooms/' + current_chatroom_id + '/messages', { content: text }, function (res) {
-                        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
-                        ue.setContent('')
-                    }, 'json')
-                } else if (current_friend_id) {
-                    $.post('/api/v1/friends/' + current_friend_id + '/messages', { content: text }, function (res) {
-                        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
-                        ue.setContent('')
-                    }, 'json')
-                }
-            }
-        })
-    });
-    // 点击任意区域 清空当前聊天窗口的未读标记
-    $(document).on('click', function() {
-        clear_current_chat_unread_mark()
-    });
-
-    // 请求失败时的处理
+    // 请求失败时的统一处理
     $(document).ajaxError(function (event, jqXHR, ajaxOptions, thrownError) {
         // 统一错误处理
         const errorResponse = jqXHR.responseJSON;
@@ -89,6 +7,81 @@ $(function () {
             alert(errorResponse.message);
             return
         }
+    });
+    
+    // 当前用户信息
+    current_user_id = null
+    current_user_name = null
+    // 当前聊天对象信息
+    current_chatroom_id = null
+    current_friend_id = null
+
+    // 获取当前用户信息
+    $.getJSON('/api/v1/users/me', function (user) {
+        current_user_id = user.id
+        current_user_name = user.name
+        avatar = user.avatar ? user.avatar : '/static/image/user.png'
+        $('#current_user_name').text(user.nickname)
+        $('#current_user_avatar').attr('src', avatar)
+        $('#modify_information_modal #name').val(user.name)
+        $('#modify_information_modal #nickname').val(user.nickname)
+        $('#modify_information_modal #avatar').attr('src', avatar)
+    })
+
+    // 点击左上角个人信息卡片显示修改个人信息窗口
+    $('.user').click(function () {
+        $('#modify_information_modal').modal()
+    })
+    // 点击图片时触发文件选择
+    $('#avatar').click(function() {
+        $('#avatar_input').click();
+    });
+    // 文件选择变化时处理
+    avatar_file = null
+    $('#avatar_input').change(function(e) {
+        if (this.files && this.files[0]) {
+            avatar_file = this.files[0]
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                // 替换图片的src为选择的图片
+                $('#avatar').attr('src', e.target.result);
+            }
+            // 读取图片文件为Data URL
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+    // 点击保存按钮时发送请求
+    $('#modify_information_confirm_btn').click(function() {
+        // 创建FormData对象
+        var formData = new FormData();
+        formData.append('avatar', avatar_file);
+        
+        // 可以添加其他表单数据
+        formData.append('nickname', $('#nickname').val());
+        
+        // 显示加载状态
+        $(this).prop('disabled', true).text('上传中...');
+        
+        // 发送AJAX请求
+        $.ajax({
+            url: '/api/v1/users/me',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                alert('图片上传成功！');
+                console.log('服务器响应:', response);
+            },
+            error: function(xhr, status, error) {
+                alert('图片上传失败: ' + error);
+                console.error('上传错误:', error);
+            },
+            complete: function() {
+                // 恢复按钮状态
+                $('#modify_information_confirm_btn').prop('disabled', false).text('保存图片');
+            }
+        });
     });
 
     // 根据message对象生成消息div
@@ -229,8 +222,8 @@ $(function () {
                         member = members[i]
                         li = '<li data="' + member.id + '">\n' +
                                 '<div class="member">\n' +
-                                    '<img src="/static/image/user.png" alt="用户头像" class="avatar ' + (member.is_online ? '' : 'offline_avatar') + '">\n' +
-                                    '<span class="name ' + (member.is_online ? '' : 'offline_username') + '">' + member.name + '</span>\n' +
+                                    '<img src="' + member.avatar + '" alt="用户头像" class="avatar ' + (member.is_online ? '' : 'offline_avatar') + '">\n' +
+                                    '<span class="name ' + (member.is_online ? '' : 'offline_username') + '">' + member.nickname + '</span>\n' +
                                 '</div>\n' +
                             '</li>'
                         $('#member_list').append(li)
@@ -252,9 +245,9 @@ $(function () {
                 friend = friends[i]
                 li = '<li data="' + friend.id + '">\n' +
                     '                <div class="room">\n' +
-                    '                    <img src="/static/image/user.png" alt="用户头像" class="avatar ' + (friend.is_online ? '' : 'offline_avatar') + '">\n' +
+                    '                    <img src="' + friend.avatar + '" alt="用户头像" class="avatar ' + (friend.is_online ? '' : 'offline_avatar') + '">\n' +
                     '                    <div class="unread_mark" ' + (friend.unread_count ? '' : 'style="display: none;"') + '>' + friend.unread_count +'</div>\n' + 
-                    '                    <span class="name ' + (friend.is_online ? '' : 'offline_username') + '">' + friend.name + '</span>\n' +
+                    '                    <span class="name ' + (friend.is_online ? '' : 'offline_username') + '">' + friend.nickname + '</span>\n' +
                     '                    <div class="right">\n' + 
                     '                        <span class="time">' + (friend.last_active_time || '') + '</span>\n' +
                     '                    </div>\n' +
@@ -317,6 +310,89 @@ $(function () {
         })
     })
 
+    // 初始化时模拟点击聊天室按钮或联系人按钮
+    url_params = new URLSearchParams(window.location.search);
+    if (url_params.get('tab') == 'friend') {
+        $('#friend_btn').click()
+    } else {
+        $('#chatroom_btn').click()
+    }
+    
+    // 初始化ueditor
+    var ue = UE.getEditor('editor', {
+        //这里可以选择自己需要的工具按钮名称,此处仅选择如下七个
+        toolbars: [
+            ['simpleupload', /*'insertimage',*/ 'emotion', 'scrawl']
+        ],
+        elementPathEnabled: false,
+        initialFrameWidth: '100%',
+        initialFrameHeight: 98,
+        maximumWords: 100,
+        wordOverFlowMsg: '<span style="color:red;">你输入的字符个数已经超出最大允许值！</span>',
+        autoHeightEnabled: false,
+        enableAutoSave: false,
+        saveInterval: 86400000
+    });
+    // 清空当前聊天窗口的未读标记
+    function clear_current_chat_unread_mark() {
+        if ($('#friend_list').is(':visible') && current_friend_id) {
+            li = $('#friend_list').find('li[data='+ current_friend_id +']')
+            unread_mark_div = li.find('.unread_mark')
+            if (unread_mark_div.is(':visible')) {
+                friend_name = li.find('.name').text()
+                $.post({
+                    url: '/api/v1/friends/' + current_friend_id + '/read_markers',
+                    contentType: 'application/json',
+                }).done(function () {
+                    console.log('将好友【' + friend_name + '】的消息标记为已读')
+                    unread_mark_div.hide()
+                });
+            }
+        }
+    }
+    // 在ueditor编辑中输入回车进行发送
+    var domUtils = UE.dom.domUtils;
+    ue.addListener('ready', function () {
+        ue.focus(true);
+        domUtils.on(ue.body, "click", function (event) {
+            // 点击任意区域 清空当前聊天窗口的未读标记
+            clear_current_chat_unread_mark()
+        })
+        domUtils.on(ue.body, "keydown", function (event) {
+            // 按下任意键 清空当前聊天窗口的未读标记
+            clear_current_chat_unread_mark()
+            // 回车发送
+            if (event.code == 'Enter') {
+                event.preventDefault();
+                event.stopPropagation();
+                // 空白内容不发送
+                text = ue.getContent()
+                if (!text) {
+                    return
+                }
+                // 去掉结尾的换行
+                text = text.replace(/<br\/><\/p>$/i, '</p>')
+                // 调用发送接口
+                console.log('send')
+                if (current_chatroom_id) {
+                    $.post('/api/v1/chatrooms/' + current_chatroom_id + '/messages', { content: text }, function (res) {
+                        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
+                        ue.setContent('')
+                    }, 'json')
+                } else if (current_friend_id) {
+                    $.post('/api/v1/friends/' + current_friend_id + '/messages', { content: text }, function (res) {
+                        $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'))
+                        ue.setContent('')
+                    }, 'json')
+                }
+            }
+        })
+    });
+    // 点击任意区域 清空当前聊天窗口的未读标记
+    $(document).on('click', function() {
+        clear_current_chat_unread_mark()
+    });
+        
     is_loading = false
     scroll_debounce_timer = null
     last_message_time = null
@@ -352,6 +428,7 @@ $(function () {
             });
         }
     }
+
     // 点击撤回按钮撤回消息
     $('.chat-content').on('click', '.recall-btn', function () {
         message_id = $(this).closest('.chat').attr('data')
@@ -396,14 +473,6 @@ $(function () {
             });
         }
     })
-
-    // 初始化时模拟点击聊天室按钮或联系人按钮
-    url_params = new URLSearchParams(window.location.search);
-    if (url_params.get('tab') == 'friend') {
-        $('#friend_btn').click()
-    } else {
-        $('#chatroom_btn').click()
-    }
 
     // 如果有join_token参数，请求join接口加入聊天室
     if (url_params.has('join_token')) {

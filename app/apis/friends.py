@@ -15,7 +15,9 @@ friendship_model = ns.model(
     'friend model',
     {
         'id': fields.Integer(attribute='friend_id'),
-        'name': fields.String(attribute='friend_name'),
+        'name': fields.String(attribute='friend._name'),
+        'nickname': fields.String(attribute='friend.nickname'),
+        'avatar': fields.String(attribute='friend.avatar'),
         'last_active_time': TimeAgo(),
         'unread_count': fields.Integer(),
         'is_online': fields.Boolean(attribute='friend.is_online'),

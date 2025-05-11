@@ -25,9 +25,9 @@
 <body lang="zh-cn">
     <div class="container">
         <div class="userpnl">
-            <div class="user" data="{{ current_user.id }}">
-                <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="usericon">
-                <span>{{ current_user.name }}</span>
+            <div class="user">
+                <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" id="current_user_avatar">
+                <span id="current_user_name">{{ current_user.name }}</span>
             </div>
             <div id='chatroom_btn' class="nav">
                 <span>聊天室</span>
@@ -143,6 +143,37 @@
                     </div>
                 </li> -->
             </ul>
+        </div>
+        <div class="modal fade bs-example-modal-sm" id="modify_information_modal" tabindex="-1" role="dialog"
+            aria-labelledby="myModalLabel">
+            <div class="modal-dialog modal-sm" role="document" aria-hidden="true">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">修改个人信息</h4>
+                    </div>
+                    <div class="modal-body">
+                        <span>登录名：</span>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="" id="name" disabled>
+                        </div>
+                        <span>昵称：</span>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="" id="nickname">
+                        </div>
+                        <span>头像：</span>
+                        <div class="input-group">
+                            <img id="avatar" src="/static/image/user.png" alt="点击选择图片">
+                            <input type="file" id="avatar_input" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button id="modify_information_confirm_btn" type="button" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="modal fade bs-example-modal-sm" id="add_chatroom_modal" tabindex="-1" role="dialog"
             aria-labelledby="myModalLabel">

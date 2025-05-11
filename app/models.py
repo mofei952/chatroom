@@ -38,7 +38,7 @@ class User(BaseModel):
     name = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(256), nullable=False)
     nickname = db.Column(db.String(50), nullable=False)
-    profile_picture = db.Column(db.String(50))
+    avatar = db.Column(db.String(50))
 
     def is_authenticated(self):
         return True
@@ -105,10 +105,6 @@ class Friendships(BaseModel):
     unread_count = db.Column(db.Integer)
 
     friend = db.relationship('User', foreign_keys=[friend_id])
-
-    @property
-    def friend_name(self):
-        return self.friend.name
 
 
 class FriendMessage(BaseModel):

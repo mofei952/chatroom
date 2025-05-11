@@ -30,6 +30,7 @@ chatroom_member_model = ns.model(
         'id': fields.Integer(),
         'name': fields.String(),
         'nickname': fields.String(),
+        'avatar': fields.String(),
         'is_online': fields.Boolean(),
     },
 )

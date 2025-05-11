@@ -120,14 +120,26 @@ body {
     height: 48px
 }
 
+.user:hover {
+    cursor: pointer;
+}
+
 .user img {
     width: 48px;
-    height: auto;
+    height: 48px;
+    /* object-fit: contain; */
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .user span {
     font-size: 16px;
     margin-left: 10px
+}
+
+#avatar {
+    width: 96px;
+    height: auto;
 }
 
 .nav {
@@ -176,7 +188,10 @@ body {
 
 .room .avatar {
     width: 36px;
-    height: auto;
+    height: 36px;
+    /* object-fit: contain; */
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .room .offline_avatar {
@@ -417,7 +432,10 @@ body {
 
 .member img {
     width: 24px;
-    height: auto;
+    height: 24px;
+    /* object-fit: contain; */
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .member .name {
