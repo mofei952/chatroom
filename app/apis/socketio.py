@@ -75,12 +75,11 @@ def check_inactive_users():
 @socketio.on('join_chatroom', namespace='/websocket')
 def join_chatroom(data):
     """客户端加入聊天室"""
-    name = data.get('name')
     room = 'room' + str(data.get('room'))
     join_room(room)
     message = {
         'chatroom_id': data.get('room'),
-        'content': name + '进入了聊天室',
+        'content': current_user.nickname + '进入了聊天室',
     }
     send(message, json=True, room=room)
 
@@ -88,11 +87,10 @@ def join_chatroom(data):
 @socketio.on('leave_chatroom', namespace='/websocket')
 def leave_chatroom(data):
     """客户端离开聊天室"""
-    name = data.get('name')
     room = 'room' + str(data.get('room'))
     leave_room(room)
     message = {
         'chatroom_id': data.get('room'),
-        'content': name + '离开了聊天室',
+        'content': current_user.nickname + '离开了聊天室',
     }
     send(message, json=True, room=room)

@@ -15,17 +15,19 @@ $(function () {
     // 当前聊天对象信息
     current_chatroom_id = null
     current_friend_id = null
+    // 默认头像url
+    default_user_avatar = '/static/image/default_user_avatar.png'
+    default_chatroom_avatar = '/static/image/default_chatroom_avatar.png'
 
     // 获取当前用户信息
     $.getJSON('/api/v1/users/me', function (user) {
         current_user_id = user.id
         current_user_name = user.name
-        avatar = user.avatar ? user.avatar : '/static/image/user.png'
         $('#current_user_name').text(user.nickname)
-        $('#current_user_avatar').attr('src', avatar)
+        $('#current_user_avatar').attr('src', user.avatar || default_user_avatar)
         $('#modify_information_modal #name').val(user.name)
         $('#modify_information_modal #nickname').val(user.nickname)
-        $('#modify_information_modal #avatar').attr('src', avatar)
+        $('#modify_information_modal #avatar').attr('src', user.avatar || default_user_avatar)
     })
 
     // 点击左上角个人信息卡片显示修改个人信息窗口
@@ -109,8 +111,8 @@ $(function () {
             div = '<div class="chat' + (message.sender_id == current_user_id ? 'right' : 'left') + '">\n' +
                 '                <div class="chat" data="' + message.id + '">\n' +
                 '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
-                '                        <img src="/static/image/user.png" alt="用户头像" class="chaticon"><br/>\n' +
-                '                        <div>' + message.sender_name + '</div>\n' +
+                '                        <img src="' + (message.sender_avatar || default_user_avatar) + '" alt="用户头像" class="avatar" title="用户名：' + message.sender_name + '"><br/>\n' +
+                '                        <div>' + message.sender_nickname + '</div>\n' +
                 '                    </div>\n' +
                 '                    <div class="chatcontainer">\n' + 
                 '                        <div class="chattime">' + message.created_at + '</div>\n' +
@@ -152,7 +154,7 @@ $(function () {
                 room = rooms[i]
                 li = '<li data="' + room.id + '">\n' +
                     '                <div class="room">\n' +
-                    '                    <img src="/static/image/user.png" alt="聊天室" class="avatar">\n' +
+                    '                    <img src="' + default_chatroom_avatar + '" alt="聊天室" class="avatar">\n' +
                     '                    <span class="name">' + room.name + '</span>\n' +
                     '                    <div class="right">\n' + 
                     '                        <span class="label">' + (room.is_private ? '私密' : '') + '</span>\n' +
@@ -222,7 +224,7 @@ $(function () {
                         member = members[i]
                         li = '<li data="' + member.id + '">\n' +
                                 '<div class="member">\n' +
-                                    '<img src="' + member.avatar + '" alt="用户头像" class="avatar ' + (member.is_online ? '' : 'offline_avatar') + '">\n' +
+                                    '<img src="' + (member.avatar || default_user_avatar) + '" alt="用户头像" class="avatar ' + (member.is_online ? '' : 'offline_avatar') + '">\n' +
                                     '<span class="name ' + (member.is_online ? '' : 'offline_username') + '">' + member.nickname + '</span>\n' +
                                 '</div>\n' +
                             '</li>'
@@ -245,7 +247,7 @@ $(function () {
                 friend = friends[i]
                 li = '<li data="' + friend.id + '">\n' +
                     '                <div class="room">\n' +
-                    '                    <img src="' + friend.avatar + '" alt="用户头像" class="avatar ' + (friend.is_online ? '' : 'offline_avatar') + '">\n' +
+                    '                    <img src="' + (friend.avatar || default_user_avatar) + '" alt="用户头像" class="avatar ' + (friend.is_online ? '' : 'offline_avatar') + '">\n' +
                     '                    <div class="unread_mark" ' + (friend.unread_count ? '' : 'style="display: none;"') + '>' + friend.unread_count +'</div>\n' + 
                     '                    <span class="name ' + (friend.is_online ? '' : 'offline_username') + '">' + friend.nickname + '</span>\n' +
                     '                    <div class="right">\n' + 
@@ -490,7 +492,7 @@ $(function () {
     
     // websocket连接和事件监听
     var socket = io('http://' + location.hostname + ':' + location.port + '/websocket');
-    socket.on('connect', function () { // 发送到服务器的通信内容
+    socket.on('connect', function () {
         setInterval(send_heartbeat, 30000);
     });
     socket.on('json', function (message) {

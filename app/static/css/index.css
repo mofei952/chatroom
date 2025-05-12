@@ -214,7 +214,7 @@ body {
     /* 超出部分显示... */
     text-overflow: ellipsis;
     /* 最大宽度 */
-    max-width: 150px;
+    max-width: 140px;
     /* 确保宽度生效 */
     display: inline-block;
 }
@@ -288,13 +288,16 @@ body {
 .chat .chatinfo {
     text-align: center;
     max-width: 20%;
+    margin: 0 10px;
     font-size: 12px
 }
 
-.chat .chatinfo img {
+.chat .chatinfo .avatar {
     width: 32px;
-    height: auto;
-    margin: 0 10px
+    height: 32px;
+    /* object-fit: contain; */
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .chatleft .chatcontainer {
@@ -430,7 +433,7 @@ body {
     background-color: #ccc;
 }
 
-.member img {
+.member .avatar {
     width: 24px;
     height: 24px;
     /* object-fit: contain; */

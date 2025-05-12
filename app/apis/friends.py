@@ -32,6 +32,8 @@ friend_message_model = ns.model(
         'content': fields.String(),
         'sender_id': fields.Integer(),
         'sender_name': fields.String(),
+        'sender_nickname': fields.String(),
+        'sender_avatar': fields.String(),
         'receiver_id': fields.Integer(),
         'created_at': fields.String(),
     },

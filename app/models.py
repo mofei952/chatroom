@@ -94,6 +94,14 @@ class ChatroomMessage(BaseModel):
     def sender_name(self):
         return self.sender.name
 
+    @property
+    def sender_nickname(self):
+        return self.sender.nickname
+    
+    @property
+    def sender_avatar(self):
+        return self.sender.avatar
+
 
 class Friendships(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
@@ -128,3 +136,11 @@ class FriendMessage(BaseModel):
     @property
     def sender_name(self):
         return self.sender.name
+
+    @property
+    def sender_nickname(self):
+        return self.sender.nickname
+    
+    @property
+    def sender_avatar(self):
+        return self.sender.avatar

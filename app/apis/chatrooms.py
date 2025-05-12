@@ -44,6 +44,8 @@ chatroom_message_model = ns.model(
         'content': fields.String(),
         'sender_id': fields.Integer(),
         'sender_name': fields.String(),
+        'sender_nickname': fields.String(),
+        'sender_avatar': fields.String(),
         'chatroom_id': fields.Integer(),
         'created_at': fields.String(),
         'is_recalled': fields.Boolean(),
@@ -192,7 +194,7 @@ class JoinChatroom(Resource):
 
         # 新增“新成员加入聊天室”的系统消息
         message = ChatroomMessage(
-            content=f'新成员【{current_user.name}】加入了聊天室',
+            content=f'新成员【{current_user.nickname}】加入了聊天室',
             chatroom_id=chatroom_id,
         )
         db.session.add(message)
