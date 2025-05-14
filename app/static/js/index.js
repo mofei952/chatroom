@@ -89,10 +89,10 @@ $(function () {
     // 根据message对象生成消息div
     function get_message_div(message) {
         if (!message.sender_id) {
-            if (message.created_at) {
+            if (message.send_time) {
                 div = '<div class="clear"></div>\n' +
                 '            <div class="chatnotice">\n' +
-                '                <p class="chattime">' + message.created_at + '</p>\n' +
+                '                <p class="chattime">' + message.send_time + '</p>\n' +
                 '                <p>' + message.content + '</p>\n' +
                 '            </div>'
             } else {
@@ -104,7 +104,7 @@ $(function () {
         } else if (message.is_recalled) {
             div = '<div class="clear"></div>\n' +
                 '            <div class="chatnotice">\n' +
-                '                <p class="chattime">' + message.created_at + '</p>\n' +
+                '                <p class="chattime">' + message.send_time + '</p>\n' +
                 '                <p>' + (message.sender_id == current_user_id ? '你' : message.sender_name) + '撤回了一条消息</p>\n' +
                 '            </div>'
         } else {
@@ -112,10 +112,10 @@ $(function () {
                 '                <div class="chat" data="' + message.id + '">\n' +
                 '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
                 '                        <img src="' + (message.sender_avatar || default_user_avatar) + '" alt="用户头像" class="avatar" title="用户名：' + message.sender_name + '"><br/>\n' +
-                '                        <div>' + message.sender_nickname + '</div>\n' +
+                '                        <div>' + (message.chatroom_id ? message.sender_nickname : '') + '</div>\n' +
                 '                    </div>\n' +
                 '                    <div class="chatcontainer">\n' + 
-                '                        <div class="chattime">' + message.created_at + '</div>\n' +
+                '                        <div class="chattime">' + message.send_time + '</div>\n' +
                 '                        <div class="chatcontent">' + 
                                                 message.content + 
                 '                            <div class="action-buttons">' + (message.sender_id == current_user_id ? '<button class="recall-btn">撤回</button>' : "") +'</div>\n' + 

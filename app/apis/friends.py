@@ -6,7 +6,7 @@ from flask_restx import Namespace, Resource, abort, fields, marshal
 from sqlalchemy import func, select, update
 
 from app import db, socketio, redis_client
-from app.apis.serializer import TimeAgo
+from app.apis.serializer import ShortTime, TimeAgo
 from app.models import FriendMessage, Friendships, User
 
 ns = Namespace('friends', description='好友相关操作')
@@ -36,6 +36,7 @@ friend_message_model = ns.model(
         'sender_avatar': fields.String(),
         'receiver_id': fields.Integer(),
         'created_at': fields.String(),
+        'send_time': ShortTime(attribute='created_at'),
     },
 )
 

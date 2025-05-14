@@ -7,7 +7,7 @@ import jwt
 from sqlalchemy import select
 
 from app import db, socketio
-from app.apis.serializer import TimeAgo
+from app.apis.serializer import ShortTime, TimeAgo
 from app.models import Chatroom, ChatroomMember, ChatroomMessage, User
 
 ns = Namespace('chatrooms', description='聊天室相关操作')
@@ -48,6 +48,7 @@ chatroom_message_model = ns.model(
         'sender_avatar': fields.String(),
         'chatroom_id': fields.Integer(),
         'created_at': fields.String(),
+        'send_time': ShortTime(attribute='created_at'),
         'is_recalled': fields.Boolean(),
     },
 )
