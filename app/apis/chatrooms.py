@@ -64,6 +64,7 @@ def send_room_message(message):
         namespace='/websocket',
     )
 
+
 def send_room_recalled_message(message):
     """发送聊天室已撤回的消息，进入聊天室的客户端会收到此消息"""
     serialized_message = marshal(message, chatroom_message_model)
@@ -73,7 +74,6 @@ def send_room_recalled_message(message):
         room='room' + str(message.chatroom_id),
         namespace='/websocket',
     )
-
 
 
 @login_required
@@ -219,9 +219,9 @@ class ChatroomMessageList(Resource):
         """获取某个聊天室的聊天列表"""
 
         # 最后一条已加载消息的时间
-        last_message_time = request.args.get('last_message_time')
-        # 加载条数（首次加载20条，之后每次10条）
-        limit = 10 if last_message_time else 20
+        before_time = request.args.get('before_time')
+        # 加载条数
+        limit = 30
 
         # 构建基础查询，按照创建时间倒序
         query = (
@@ -232,11 +232,9 @@ class ChatroomMessageList(Resource):
         )
 
         # 增加创建时间的筛选条件，没有传时间表示首次加载
-        if last_message_time:
-            last_message_time = datetime.strptime(
-                last_message_time, '%Y-%m-%d %H:%M:%S'
-            )
-            query = query.where(ChatroomMessage.created_at < last_message_time)
+        if before_time:
+            before_time = datetime.strptime(before_time, '%Y-%m-%d %H:%M:%S')
+            query = query.where(ChatroomMessage.created_at < before_time)
 
         # 执行查询
         message_list = db.session.scalars(query).all()
@@ -289,7 +287,7 @@ class ChatroomOneMessage(Resource):
         # 权限检查
         if message.sender_id != current_user.id:
             abort(403, '只能撤回自己发送的消息')
-        
+
         # 发送时间检查
         now = datetime.now()
         if (now - message.created_at).total_seconds() > 60:

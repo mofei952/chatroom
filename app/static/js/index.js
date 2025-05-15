@@ -18,6 +18,12 @@ $(function () {
     // 默认头像url
     default_user_avatar = '/static/image/default_user_avatar.png'
     default_chatroom_avatar = '/static/image/default_chatroom_avatar.png'
+    // 当前聊天窗口最老一条消息时间，用来加载更早的消息
+    oldest_message_time = null
+    // 当前聊天窗口最新一条消息时间和最新组内消息数量，用来在接收新消息时进行分组的判断
+    newest_message_time = null
+    newest_group_message_count = 0
+
 
     // 获取当前用户信息
     $.getJSON('/api/v1/users/me', function (user) {
@@ -89,22 +95,13 @@ $(function () {
     // 根据message对象生成消息div
     function get_message_div(message) {
         if (!message.sender_id) {
-            if (message.send_time) {
-                div = '<div class="clear"></div>\n' +
-                '            <div class="chatnotice">\n' +
-                '                <p class="chattime">' + message.send_time + '</p>\n' +
-                '                <p>' + message.content + '</p>\n' +
-                '            </div>'
-            } else {
-                div = '<div class="clear"></div>\n' +
+            div = '<div class="clear"></div>\n' +
                 '            <div class="chatnotice">\n' +
                 '                <p>' + message.content + '</p>\n' +
                 '            </div>'
-            }
         } else if (message.is_recalled) {
             div = '<div class="clear"></div>\n' +
                 '            <div class="chatnotice">\n' +
-                '                <p class="chattime">' + message.send_time + '</p>\n' +
                 '                <p>' + (message.sender_id == current_user_id ? '你' : message.sender_name) + '撤回了一条消息</p>\n' +
                 '            </div>'
         } else {
@@ -112,10 +109,10 @@ $(function () {
                 '                <div class="chat" data="' + message.id + '">\n' +
                 '                    <div class="chatinfo ' + (message.sender_id == current_user_id ? 'fr' : 'fl') + '">\n' +
                 '                        <img src="' + (message.sender_avatar || default_user_avatar) + '" alt="用户头像" class="avatar" title="用户名：' + message.sender_name + '"><br/>\n' +
-                '                        <div>' + (message.chatroom_id ? message.sender_nickname : '') + '</div>\n' +
+                // '                        <div>' + (message.chatroom_id ? message.sender_nickname : '') + '</div>\n' +
                 '                    </div>\n' +
                 '                    <div class="chatcontainer">\n' + 
-                '                        <div class="chattime">' + message.send_time + '</div>\n' +
+                '                        <div class="chatname">' + (message.chatroom_id ? message.sender_nickname : '') + '</div>\n' +
                 '                        <div class="chatcontent">' + 
                                                 message.content + 
                 '                            <div class="action-buttons">' + (message.sender_id == current_user_id ? '<button class="recall-btn">撤回</button>' : "") +'</div>\n' + 
@@ -127,16 +124,59 @@ $(function () {
         }
         return div
     }
+    // 计算两个时间字符串的分钟差
+    function get_time_diff_in_minutes(time_str1, time_str2) {
+        console.log(time_str1, time_str2)
+        const date1 = new Date(time_str1.replace(' ', 'T'));
+        const date2 = new Date(time_str2.replace(' ', 'T'));
+        
+        // 计算时间差（毫秒）并转换为分钟
+        const diff_ms = Math.abs(date1 - date2);
+        const diff_minutes = diff_ms / (1000 * 60);
+        
+        return diff_minutes;
+    }
     // 在聊天窗口最前面插入消息列表
-    function prepend_messages(messages) {
+    function prepend_messages(messages, first=false) {
+        // 如果是当前聊天窗口首次加载，则重置最新组内消息数量
+        if (first) {
+            newest_group_message_count = 0
+        }
+        if (messages.length == 0) {
+            return
+        }
+        // 记录最老一条消息时间
+        oldest_message_time = messages.at(-1).created_at
+        // 如果是当前聊天窗口首次加载，则记录最新一条记录时间
+        if (first) {
+            newest_message_time = messages.at(0).created_at
+        }
         // 插入消息前聊天窗口的高度和滚动条位置
         scroll_height_before = $('.chat-content').prop('scrollHeight')
         scroll_top_before = $('.chat-content').scrollTop()
-        // 插入消息列表
+        // 倒序插入消息列表
+        group_message_count = 0
         for (var i = 0; i < messages.length; i++) {
+            // 插入消息
             message = messages[i]
             div = get_message_div(message)
             $('.chat-content').prepend(div)
+            // 组内消息加1
+            group_message_count += 1
+            // 如果是最后一条消息 或者 下一条消息在5分钟以外 或者 组内消息大于20，则插入一个时间节点
+            next_message = messages[i+1]
+            if (! next_message || get_time_diff_in_minutes(message.created_at, next_message.created_at) > 5 || group_message_count >= 20) {
+                if (newest_group_message_count == 0) {
+                    newest_group_message_count = group_message_count
+                }
+                group_message_count = 0
+                $('.chat-content').prepend('<div class="clear"></div>\n' +
+                               '            <div class="chatnotice">\n' +
+                               '                <p class="chattime">' + message.send_time + '</p>\n' +
+                               '            </div>'
+                )
+                
+            }
         }
         // 插入消息后聊天窗口的高度
         scroll_height_after = $('.chat-content').prop('scrollHeight')
@@ -203,11 +243,7 @@ $(function () {
             // 清空当前聊天区域
             $('.chat-content').empty()
             // 遍历获取的聊天记录，往聊天区域填充
-            prepend_messages(messages)
-            // 记录最后一条消息的时间
-            if (messages.length != 0) {
-                last_message_time = messages.at(-1).created_at
-            }
+            prepend_messages(messages, first=true)
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             // 发出进入聊天室信号
@@ -296,11 +332,7 @@ $(function () {
             // 清空当前聊天区域
             $('.chat-content').empty()
             // 遍历获取的聊天记录，往聊天区域填充
-            prepend_messages(messages)
-            // 记录最后一条消息的时间
-            if (messages.length != 0) {
-                last_message_time = messages.at(-1).created_at
-            }
+            prepend_messages(messages, first=true)
             // 滑到最底部，查看最新的聊天内容
             $('.chat-content').scrollTop($('.chat-content').prop('scrollHeight'));
             // 显示editor
@@ -397,7 +429,6 @@ $(function () {
         
     is_loading = false
     scroll_debounce_timer = null
-    last_message_time = null
     // 滑动到聊天框顶部时加载更早之前的聊天记录
     $('.chat-content').on('scroll', function () {
         clearTimeout(scroll_debounce_timer);
@@ -411,20 +442,14 @@ $(function () {
     function load_more_message() {
         is_loading = true
         if (current_chatroom_id) {
-            $.getJSON('/api/v1/chatrooms/' + current_chatroom_id + '/messages?last_message_time=' + last_message_time, function (messages) {
-                if (messages.length > 0) {
-                    prepend_messages(messages)
-                    last_message_time = messages.at(-1).created_at
-                }
+            $.getJSON('/api/v1/chatrooms/' + current_chatroom_id + '/messages?before_time=' + oldest_message_time, function (messages) {
+                prepend_messages(messages)
             }).always(function () {
                 is_loading = false
             });
         } else {
-            $.getJSON('/api/v1/friends/' + current_friend_id + '/messages?last_message_time=' + last_message_time, function (messages) {
-                if (messages.length > 0) {
-                    prepend_messages(messages)
-                    last_message_time = messages.at(-1).created_at
-                }
+            $.getJSON('/api/v1/friends/' + current_friend_id + '/messages?before_time=' + oldest_message_time, function (messages) {
+                prepend_messages(messages)
             }).always(function () {
                 is_loading = false
             });
@@ -496,8 +521,21 @@ $(function () {
         setInterval(send_heartbeat, 30000);
     });
     socket.on('json', function (message) {
-        //显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
+        // 显示接受到的通信内容，包括服务器端直接发送的内容和反馈给客户端的内容
         console.log('receive: ', message)
+        // 如果是第一条消息 或者 上一条消息在5分钟以外 或者 组内消息大于20，则插入一个时间节点
+        if (! newest_message_time || get_time_diff_in_minutes(message.created_at, newest_message_time) > 5 || newest_group_message_count >= 20) {
+            newest_group_message_count = 0
+            $('.chat-content').append('<div class="clear"></div>\n' +
+                '            <div class="chatnotice">\n' +
+                '                <p class="chattime">' + message.send_time + '</p>\n' +
+                '            </div>'
+            )
+        }
+        // 更新最新消息时间和最新组内消息数
+        newest_message_time = message.created_at
+        newest_group_message_count += 1
+        // 插入消息div
         if (current_chatroom_id && message.chatroom_id == current_chatroom_id) {
             div = get_message_div(message)
             $('.chat-content').append(div)

@@ -145,9 +145,9 @@ class FriendMessageList(Resource):
         """获取好友聊天列表"""
 
         # 最后一条已加载消息的时间
-        last_message_time = request.args.get('last_message_time')
-        # 加载条数（首次加载20条，之后每次10条）
-        limit = 10 if last_message_time else 20
+        before_time = request.args.get('before_time')
+        # 加载条数
+        limit = 30
 
         # 构建基础查询，按照创建时间倒序
         query = (
@@ -163,11 +163,9 @@ class FriendMessageList(Resource):
         )
 
         # 增加创建时间的筛选条件，没有传时间表示首次加载
-        if last_message_time:
-            last_message_time = datetime.strptime(
-                last_message_time, '%Y-%m-%d %H:%M:%S'
-            )
-            query = query.where(FriendMessage.created_at < last_message_time)
+        if before_time:
+            before_time = datetime.strptime(before_time, '%Y-%m-%d %H:%M:%S')
+            query = query.where(FriendMessage.created_at < before_time)
 
         # 执行查询
         message_list = db.session.scalars(query).all()

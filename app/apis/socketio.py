@@ -1,11 +1,12 @@
-import json
 import time
+from datetime import datetime
 
 from flask import request
 from flask_login import current_user
 from flask_socketio import emit, join_room, leave_room, send
 
 from app import redis_client, socketio
+from app.apis.serializer import ShortTime
 
 
 @socketio.on('connect', namespace='/websocket')
@@ -77,9 +78,12 @@ def join_chatroom(data):
     """客户端加入聊天室"""
     room = 'room' + str(data.get('room'))
     join_room(room)
+    now = datetime.now()
     message = {
         'chatroom_id': data.get('room'),
         'content': current_user.nickname + '进入了聊天室',
+        'created_at': now.strftime('%Y-%m-%d %H:%M:%S'),
+        'send_time': ShortTime().format(now),
     }
     send(message, json=True, room=room)
 
@@ -89,8 +93,11 @@ def leave_chatroom(data):
     """客户端离开聊天室"""
     room = 'room' + str(data.get('room'))
     leave_room(room)
+    now = datetime.now()
     message = {
         'chatroom_id': data.get('room'),
         'content': current_user.nickname + '离开了聊天室',
+        'created_at': now.strftime('%Y-%m-%d %H:%M:%S'),
+        'send_time': ShortTime().format(now),
     }
     send(message, json=True, room=room)
