@@ -149,9 +149,8 @@
                 </li> -->
             </ul>
         </div>
-        <div class="modal fade bs-example-modal-sm" id="modify_information_modal" tabindex="-1" role="dialog"
-            aria-labelledby="myModalLabel">
-            <div class="modal-dialog modal-sm" role="document" aria-hidden="true">
+        <div class="modal fade" id="modify_information_modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document" aria-hidden="true">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
@@ -159,17 +158,23 @@
                         <h4 class="modal-title">修改个人信息</h4>
                     </div>
                     <div class="modal-body">
-                        <span>登录名：</span>
-                        <div class="input-group">
+                        <div class="form-div">
+                            <span class="form-label">登录名：</span>
                             <input type="text" class="form-control" placeholder="" id="name" disabled>
                         </div>
-                        <span>昵称：</span>
-                        <div class="input-group">
+                        <div class="form-div">
+                            <span class="form-label">昵&nbsp;&nbsp;&nbsp;&nbsp;称：</span>
                             <input type="text" class="form-control" placeholder="" id="nickname">
                         </div>
-                        <span>头像：</span>
-                        <div class="input-group">
-                            <img id="avatar" src="/static/image/user.png" alt="点击选择图片">
+                        <div class="form-div">
+                            <span class="form-label">头&nbsp;&nbsp;&nbsp;&nbsp;像：</span>
+                            <div class="avatar-container">
+                                <div id="avatar" class="avatar-div">
+                                    <img class="avatar" src="/static/image/user.png" alt="点击选择图片">
+                                    <div class="edit-corner"></div>
+                                    <img class="edit-button" src="/static/image/edit.png">
+                                </div>
+                            </div>
                             <input type="file" id="avatar_input" accept="image/*" style="display: none;">
                         </div>
                     </div>

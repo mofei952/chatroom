@@ -70,6 +70,16 @@ p {
     position: relative;
 }
 
+.alert-top {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    min-width: 300px;
+    max-width: 80%;
+    display:none;
+}
 
 
 /*总体布局样式*/
@@ -135,11 +145,6 @@ body {
 .user span {
     font-size: 16px;
     margin-left: 10px
-}
-
-#avatar {
-    width: 96px;
-    height: auto;
 }
 
 .nav {
@@ -464,6 +469,74 @@ body {
 
 .member .offline_username {
     color: #b3b3b3;
+}
+
+.modal-dialog {
+    margin: 100px auto;
+}
+
+.modal-body {
+    text-align: center;
+}
+
+.form-div {
+    margin: 10px 0;
+}
+
+.form-label {
+    display: inline-block;
+    width: 60px;
+    vertical-align: top
+}
+
+.form-control {
+    display: inline-block;
+    width: 200px;
+}
+
+.avatar-container {
+    display: inline-block;
+    width: 200px;
+    text-align: left;
+}
+
+.avatar-div {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.avatar-div .avatar {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    /* border-radius: 50%; */
+}
+
+.edit-corner {
+    position: absolute; 
+    right: 0;
+    bottom: 0;
+    border-style: solid;
+    border-width: 0 0 24px 24px; /* 右下角三角形 */
+    border-color: transparent transparent rgba(0, 0, 0, 0.6) transparent; /* 半透明黑色 */
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: none;
+}
+
+.edit-button {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 10px;
+    height: 10px;
+    display: none;
+}
+
+.avatar-div:hover .edit-corner, .avatar-div:hover .edit-button {
+    display: block;
 }
 
 #invitation_link {

@@ -1,14 +1,40 @@
 $(function () {
+    // 显示alert卡片
+    alert_timeout = null
+    function show_dynamic_alert(text, type) {
+        // 如果上一条没关闭的话先关闭，并清除定时关闭的任务
+        $('.alert').remove();
+        if (alert_timeout) {
+            clearTimeout(alert_timeout)
+        }
+    
+        // var alert_div = '<div class="alert alert-warning alert-dismissible fade in alert-top-right" role="alert">' +
+        //                     '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+        //                         '<span aria-hidden="true">&times;</span>'+
+        //                     '</button>' +
+        //                     '<strong>错误!</strong> 这是一条动态创建的警告信息。'+
+        //                 '</div>';
+        alert_div = '<div id="alert" class="alert alert-' + type + ' fade in alert-top" role="alert">' + text +  '</div>'
+    
+        // 添加到body中
+        $('body').append(alert_div);
+        $("#alert").show();
+        
+        // 2秒后自动消失
+        alert_timeout = setTimeout(function() {
+          $("#alert").alert('close');
+        }, 2000);
+    }
     // 请求失败时的统一处理
     $(document).ajaxError(function (event, jqXHR, ajaxOptions, thrownError) {
         // 统一错误处理
         const errorResponse = jqXHR.responseJSON;
         if (errorResponse) {
-            alert(errorResponse.message);
+            show_dynamic_alert(errorResponse.message, 'warning')
             return
         }
     });
-    
+
     // 当前用户信息
     current_user_id = null
     current_user_name = null
@@ -33,7 +59,7 @@ $(function () {
         $('#current_user_avatar').attr('src', user.avatar || default_user_avatar)
         $('#modify_information_modal #name').val(user.name)
         $('#modify_information_modal #nickname').val(user.nickname)
-        $('#modify_information_modal #avatar').attr('src', user.avatar || default_user_avatar)
+        $('#modify_information_modal #avatar .avatar').attr('src', user.avatar || default_user_avatar)
     })
 
     // 点击左上角个人信息卡片显示修改个人信息窗口
@@ -68,7 +94,7 @@ $(function () {
         formData.append('nickname', $('#nickname').val());
         
         // 显示加载状态
-        $(this).prop('disabled', true).text('上传中...');
+        $(this).prop('disabled', true).text('保存中...');
         
         // 发送AJAX请求
         $.ajax({
@@ -78,16 +104,12 @@ $(function () {
             processData: false,
             contentType: false,
             success: function(response) {
-                alert('图片上传成功！');
-                console.log('服务器响应:', response);
-            },
-            error: function(xhr, status, error) {
-                alert('图片上传失败: ' + error);
-                console.error('上传错误:', error);
+                show_dynamic_alert('修改个人信息成功', 'success')
+                $('#modify_information_modal').modal('hide')
             },
             complete: function() {
                 // 恢复按钮状态
-                $('#modify_information_confirm_btn').prop('disabled', false).text('保存图片');
+                $('#modify_information_confirm_btn').prop('disabled', false).text('保存');
             }
         });
     });
