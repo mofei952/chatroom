@@ -34,7 +34,7 @@
                 <a id="add_chatroom_btn" class="add_btn">+</a>
             </div>
             <div id='friend_btn' class="nav">
-                <span>联系人</span>
+                <span>好友</span>
                 <a id="add_friend_btn" class="add_btn">+</a>
             </div>
             <div class="clear"></div>
@@ -227,11 +227,13 @@
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                                 aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">添加联系人</h4>
+                        <h4 class="modal-title">添加好友</h4>
                     </div>
                     <div class="modal-body">
-                        <span>用户名：</span>
-                        <input id="friend_name" name="friend_name" />
+                        <div class="form-div">
+                            <span class="form-label">用户名：</span>
+                            <input type="text" class="form-control" placeholder="" id="friend_name">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>

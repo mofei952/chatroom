@@ -297,7 +297,7 @@ $(function () {
         })
     })
 
-    // 点击联系人按钮显示好友列表
+    // 点击好友按钮显示好友列表
     $('#friend_btn').click(function () {
         $('#room_list').hide()
         $('#friend_list').show()
@@ -332,9 +332,9 @@ $(function () {
             data: JSON.stringify({ name: name })
         }).done(function (res) {
             console.log('add friend: ', res);
-            // location.href = location.pathname + '?tab=friend';
-            $('#add_friend_modal').modal('hide')
             $('#friend_btn').click()
+            show_dynamic_alert('添加好友成功', 'success')
+            $('#add_friend_modal').modal('hide')
         });
     })
     // 点击好友列表的li进入对应的聊天窗口
@@ -368,7 +368,7 @@ $(function () {
         })
     })
 
-    // 初始化时模拟点击聊天室按钮或联系人按钮
+    // 初始化时模拟点击聊天室按钮或好友按钮
     url_params = new URLSearchParams(window.location.search);
     if (url_params.get('tab') == 'friend') {
         $('#friend_btn').click()
