@@ -26,8 +26,8 @@
     <div class="container">
         <div class="userpnl">
             <div class="user">
-                <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" id="current_user_avatar">
-                <span id="current_user_name">{{ current_user.name }}</span>
+                <img src="{{ current_user.avatar }}" alt="用户头像" id="current_user_avatar">
+                <span id="current_user_name">{{ current_user.nickname }}</span>
             </div>
             <div id='chatroom_btn' class="nav">
                 <span>聊天室</span>
@@ -41,7 +41,7 @@
             <ul id="room_list" class="chatlist" style="display: {{ 'block' if tab == 'chatroom' else 'none' }};">
                 <!-- <li data="1">
                     <div class="room">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar">
+                        <img src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="用户头像" class="avatar">
                         <span class="name">顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶顶</span>
                         <div class="right">
                             <span class="label">私密</span>
@@ -53,7 +53,7 @@
             <ul id="friend_list" class="chatlist" style="display: {{ 'block' if tab == 'friend' else 'none' }};">
                 <!-- <li data="1">
                     <div class="room">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar">
+                        <img src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="用户头像" class="avatar">
                         <div class="unread_mark">99+</div>
                         <span class="name">好友测试</span>
                         <div class="right">
@@ -63,7 +63,7 @@
                 </li>
                 <li data="2">
                     <div class="room">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar">
+                        <img src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="用户头像" class="avatar">
                         <div class="unread_mark">9</div>
                         <span class="name">好友测试</span>
                         <div class="right">
@@ -73,7 +73,7 @@
                 </li>
                 <li data="3">
                     <div class="room">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class="avatar offline_avatar">
+                        <img src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="用户头像" class="avatar offline_avatar">
                         <div class="unread_mark">23</div>
                         <span class="name offline_username">好友测试</span>
                         <div class="right">
@@ -93,7 +93,7 @@
                 <div class="chatleft">
                     <div class="chat" data="1">
                         <div class="chatinfo fl">
-                            <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像"
+                            <img src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="用户头像"
                                 class="avatar"><br />
                         </div>
                         <div class="chatcontainer">
@@ -111,7 +111,7 @@
                 <div class="chatright">
                     <div class="chat" data="2">
                         <div class="chatinfo fr">
-                            <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像"
+                            <img src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="用户头像"
                                 class="avatar"><br />
                         </div>
                         <div class="chatcontainer">
@@ -143,7 +143,7 @@
             <ul id="member_list" class="memberlist" style="display: block;">
                 <!-- <li data="1">
                     <div class="member">
-                        <img src="{{ url_for('static', filename='image/user.png') }}" alt="用户头像" class='avatar offline_avatar'>
+                        <img src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="用户头像" class='avatar offline_avatar'>
                         <span class="name offline_username">成员名称测试</span>
                     </div>
                 </li> -->
@@ -170,7 +170,7 @@
                             <span class="form-label">头&nbsp;&nbsp;&nbsp;&nbsp;像：</span>
                             <div class="avatar-container">
                                 <div id="avatar" class="avatar-div">
-                                    <img class="avatar" src="/static/image/user.png" alt="点击选择图片">
+                                    <img class="avatar" src="{{ url_for('static', filename='image/default_user_avatar.png') }}" alt="点击选择图片">
                                     <div class="edit-corner"></div>
                                     <img class="edit-button" src="/static/image/edit.png">
                                 </div>
