@@ -242,7 +242,9 @@ $(function () {
             data: JSON.stringify({ name: chatroom_name, is_private: chatroom_type == 'private' })
         }).done(function (res) {
             console.log('create chatroom: ', res);
-            location.reload()
+            $('#chatroom_btn').click()
+            show_dynamic_alert('创建聊天室成功', 'success')
+            $('#add_chatroom_modal').modal('hide')
         });
     })
     // 点击聊天室列表的li进入对应的聊天室

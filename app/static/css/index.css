@@ -78,9 +78,26 @@ p {
     z-index: 1050;
     min-width: 300px;
     max-width: 80%;
-    display:none;
+    display: none;
 }
 
+::-webkit-scrollbar {
+    width: 6px;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 3px;
+}
+
+:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+}
 
 /*总体布局样式*/
 html,
@@ -172,7 +189,7 @@ body {
 }
 
 .chatlist {
-    height: 430px;
+    height: 485px;
     overflow: auto;
 }
 
@@ -219,7 +236,7 @@ body {
     /* 超出部分显示... */
     text-overflow: ellipsis;
     /* 最大宽度 */
-    max-width: 140px;
+    max-width: 130px;
     /* 确保宽度生效 */
     display: inline-block;
 }
@@ -347,7 +364,7 @@ body {
     bottom: -10px;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     font-size: 13px
 }
 
@@ -471,6 +488,7 @@ body {
     color: #b3b3b3;
 }
 
+/* 弹窗样式 */
 .modal-dialog {
     margin: 100px auto;
 }
@@ -485,8 +503,8 @@ body {
 
 .form-label {
     display: inline-block;
-    width: 60px;
-    vertical-align: top
+    vertical-align: top;
+    margin-top: 7px;
 }
 
 .form-control {
@@ -514,12 +532,12 @@ body {
 }
 
 .edit-corner {
-    position: absolute; 
+    position: absolute;
     right: 0;
     bottom: 0;
     border-style: solid;
-    border-width: 0 0 24px 24px; /* 右下角三角形 */
-    border-color: transparent transparent rgba(0, 0, 0, 0.6) transparent; /* 半透明黑色 */
+    border-width: 0 0 24px 24px;
+    border-color: transparent transparent rgba(0, 0, 0, 0.6) transparent;
     width: 24px;
     height: 24px;
     cursor: pointer;
@@ -535,8 +553,20 @@ body {
     display: none;
 }
 
-.avatar-div:hover .edit-corner, .avatar-div:hover .edit-button {
+.avatar-div:hover .edit-corner,
+.avatar-div:hover .edit-button {
     display: block;
+}
+
+.radio {
+    display: inline-block;
+    width: 200px;
+    margin-top: 7px;
+    text-align: left;
+}
+
+.radio label {
+    margin-right: 20px;
 }
 
 #invitation_link {
