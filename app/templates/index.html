@@ -252,8 +252,10 @@
                         <h4 class="modal-title">生成邀请链接</h4>
                     </div>
                     <div class="modal-body">
-                        <span>有效期：</span>
-                        <input id="valid_days" name="valid_days" type="number" /><br>
+                        <div class="form-div">
+                            <span class="form-label">有效期（天）：</span>
+                            <input type="text" class="form-control" placeholder="" id="valid_days">
+                        </div>
                         <span id="invitation_link"></span>
                     </div>
                     <div class="modal-footer">

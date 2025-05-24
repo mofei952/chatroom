@@ -384,7 +384,7 @@ $(function () {
         ],
         elementPathEnabled: false,
         initialFrameWidth: '100%',
-        initialFrameHeight: 98,
+        initialFrameHeight: 107,
         maximumWords: 100,
         wordOverFlowMsg: '<span style="color:red;">你输入的字符个数已经超出最大允许值！</span>',
         autoHeightEnabled: false,
@@ -511,16 +511,16 @@ $(function () {
             valid_days = $('#valid_days').val()
             $.getJSON('/api/v1/chatrooms/' + current_chatroom_id + '/invitation_link?valid_days=' + valid_days, function (link) {
                 invitation_link = link
-                $('#invitation_link').text('邀请链接：\n' + link)
+                $('#invitation_link').text('邀请链接 ：\n' + link)
                 $('#add_member_confirm_btn').text('复制')
             })
         } else {
             navigator.clipboard.writeText(invitation_link)
             .then(function() {
-                alert("已复制到剪贴板！");
+                show_dynamic_alert('已复制到剪贴板！', 'success');
             })
             .catch(function(err) {
-                alert("复制失败，请手动复制");
+                show_dynamic_alert('复制失败，请手动复制', 'warning');
             });
         }
     })
@@ -534,7 +534,7 @@ $(function () {
             contentType: 'application/json',
             data: JSON.stringify({ join_token: join_token })
         }).done(function (chatroom) {
-            alert('成功加入聊天室【' + chatroom.name + '】')
+            show_dynamic_alert('成功加入聊天室【' + chatroom.name + '】', 'success');
             location.href = location.pathname;
         });
     }
