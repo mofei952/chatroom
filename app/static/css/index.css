@@ -447,6 +447,11 @@ body {
     right: 10px;
 }
 
+.memberlist {
+    height: 579px;
+    overflow: auto;
+}
+
 .member {
     padding: 5px 10px;
 }

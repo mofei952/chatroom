@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11.2"
 dependencies = [
     "eventlet>=0.39.1",
+    "faker>=37.4.0",
     "flask>=3.1.0",
     "flask-login>=0.6.3",
     "flask-migrate>=4.1.0",

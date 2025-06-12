@@ -37,6 +37,7 @@ friend_message_model = ns.model(
         'receiver_id': fields.Integer(),
         'created_at': fields.String(),
         'send_time': ShortTime(attribute='created_at'),
+        'is_recalled': fields.Boolean(),
     },
 )
 
