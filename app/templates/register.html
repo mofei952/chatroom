@@ -13,7 +13,7 @@
     <div class="container">
         <div class="register-box">
             <div class="register-title">
-                <a>注册界面</a>
+                <a>用户注册</a>
             </div>
             <form method="post">
                 {{ form.csrf_token() }}
@@ -33,7 +33,7 @@
 
                 </div>
                 <div class="register-btn">
-                    <input type="submit" name="register" value="sign up" id="register">
+                    <input type="submit" name="register" value="注册" id="register">
                 </div>
             </form>
             <a class="remind" href="{{ url_for('web.login') }}">

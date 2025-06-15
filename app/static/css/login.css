@@ -1,5 +1,11 @@
+html,
 body {
-    background-color: #eae3e3;
+    height: 100%
+}
+
+body {
+    background: url('/static/image/bg.jpg') no-repeat;
+    background-size: 100% 100%;
 }
 
 input, select, textarea {
@@ -21,7 +27,7 @@ a, a:hover {
 
 .container {
     position: fixed;
-    top: 50%;
+    top: 40%;
     left: 50%;
     -webkit-transform: translateX(-50%) translateY(-50%);
     -moz-transform: translateX(-50%) translateY(-50%);
@@ -29,16 +35,17 @@ a, a:hover {
 }
 
 .login-box {
-    background: hsla(0, 0%, 100%, .3);
+    background: hsla(0, 0%, 100%, .5);
     padding: 60px;
     border-radius: 20px;
 }
 
 .login-title {
-    font-size: 40px;
+    font-size: 30px;
     text-align: center;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 30px;
 }
 
 .login-input {
@@ -64,26 +71,27 @@ a, a:hover {
     width: 240px;
     height: 36px;
     border-radius: 6px;
-    background-color: #0400ff;
+    background-color: #0075ff;
     color: #fff;
 }
 
 .login-btn input:hover {
 
-    background-color: #0400cc;
+    background-color: #0063ff;
 }
 
 .register-box {
-    background: hsla(0, 0%, 100%, .3);
+    background: hsla(0, 0%, 100%, .5);
     padding: 60px;
     border-radius: 20px;
 }
 
 .register-title {
-    font-size: 40px;
+    font-size: 30px;
     text-align: center;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 30px;
 }
 
 .register-input {
@@ -109,13 +117,13 @@ a, a:hover {
     width: 240px;
     height: 36px;
     border-radius: 6px;
-    background-color: #0400ff;
+    background-color: #0075ff;
     color: #fff;
 }
 
 .register-btn input:hover {
 
-    background-color: #0400cc;
+    background-color: #0063ff;
 }
 
 .remind {
@@ -125,5 +133,5 @@ a, a:hover {
 }
 
 .remind:hover {
-    color: #0400cc;
+    color: #0063ff;
 }

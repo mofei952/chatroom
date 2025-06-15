@@ -12,7 +12,7 @@
     <div class="container">
         <div class="login-box">
             <div class="login-title">
-                <a>登录界面</a>
+                <a>用户登录</a>
             </div>
             <form method="post">
                 {# {{ form.csrf_token() }}#}
@@ -27,7 +27,7 @@
                     </p>
                 </div>
                 <div class="login-btn">
-                    <input type="submit" name="login" value="login" id="login">
+                    <input type="submit" name="login" value="登录" id="login">
                 </div>
             </form>
             <a class="remind" href="{{ url_for('web.register') }}">
